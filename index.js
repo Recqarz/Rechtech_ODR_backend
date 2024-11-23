@@ -11,6 +11,7 @@ const { caseDataRoute } = require("./routes/caseData.route");
 const { expertRoute } = require("./routes/expert.route");
 const { appointAllRoute } = require("./routes/arbitratorassandnotify.route");
 const { meetingRoute } = require("./routes/meeting.route");
+const { caseRoute } = require("./module/cases/case.route");
 
 const app = express();
 
@@ -26,7 +27,7 @@ app.use("/resetpassword", resetPasswordRoute);
 app.use("/arbitrator", arbitratorRoute);
 app.use("/client", clientRoute);
 app.use("/autouid", uidRoute);
-app.use("/uploadcasedata", caseDataRoute);
+app.use("/cases", caseRoute);
 app.use("/experties", expertRoute);
 app.use("/arbitratorappointnotifyall", appointAllRoute);
 app.use("/meeting", meetingRoute);

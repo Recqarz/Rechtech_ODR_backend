@@ -71,8 +71,10 @@ const addCase = async (req, res) => {
 const getAutoCaseId = async (req, res) => {
   try {
     const allcases = await CASES.find({});
-    let id = `CS${allcases.length + 1}`;
-    res.status(200).json({ data: id });
+    let count = allcases.length+1;
+    let paddedCount = count.toString().padStart(2, "0");
+    let caseId = "CS" + paddedCount;
+    res.status(200).json({ data: caseId });
   } catch (err) {
     console.error("Error generating auto ID:", err.message);
     res.status(500).send("Internal Server Error: " + err.message);

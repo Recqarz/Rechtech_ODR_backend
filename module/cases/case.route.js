@@ -22,6 +22,6 @@ const upload = multer({ storage });
 
 caseRoute.post("/add-case", upload.array("attachments"), addCase);
 
-caseRoute.post("/auto-caseid", getAutoCaseId);
+caseRoute.get("/auto-caseid", getAutoCaseId);
 
 module.exports = { caseRoute };

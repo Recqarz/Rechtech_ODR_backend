@@ -1,14 +1,15 @@
-const { CASEDATA } = require("../model/caseData.model");
+const { CASES } = require("../module/cases/case.model");
 const { USER } = require("../module/users/user.model");
 const { notificationtToall } = require("../services/notificationtoall");
 
 const appointArbitratorandNotify = async (req, res) => {
-  const { caseId, arbitrator, arbitratorId, arbitratorEmail } = req.body;
+  const { id, arbitratorName, arbitratorId, arbitratorEmail } = req.body;
   try {
-    const cases = await CASEDATA.findById(caseId);
-    cases.arbitrator = arbitrator;
+    const cases = await CASES.findById(id);
+    cases.arbitratorName = arbitratorName;
     cases.arbitratorId = arbitratorId;
     cases.arbitratorEmail = arbitratorEmail;
+    cases.isArbitratorAssigned = true;
     const updatedCases = await cases.save();
     const user = await USER.findOne({ emailId: arbitratorEmail });
     let noOfAssignCase = parseInt(user.noOfAssignCase) + 1;

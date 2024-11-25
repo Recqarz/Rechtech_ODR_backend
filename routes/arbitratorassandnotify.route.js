@@ -1,7 +1,9 @@
-const { appointArbitratorandNotify } = require("../controllers/arbitratorassandnotify.controller")
+const {
+  appointArbitratorandNotify,
+} = require("../controllers/arbitratorassandnotify.controller");
 
-const appointAllRoute = require("express").Router()
+const appointAllRoute = require("express").Router();
 
-appointAllRoute.post("/", appointArbitratorandNotify)
+appointAllRoute.post("/", appointArbitratorandNotify);
 
-module.exports = { appointAllRoute }
+module.exports = { appointAllRoute };

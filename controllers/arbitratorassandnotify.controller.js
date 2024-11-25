@@ -1,5 +1,5 @@
 const { CASEDATA } = require("../model/caseData.model");
-const { USER } = require("../model/user.model");
+const { USER } = require("../module/users/user.model");
 const { notificationtToall } = require("../services/notificationtoall");
 
 const appointArbitratorandNotify = async (req, res) => {

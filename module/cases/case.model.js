@@ -46,6 +46,18 @@ const caseSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  isArbitratorAssigned: {
+    type: Boolean,
+    default: false,
+  },
+  isFileUpload: {
+    type: Boolean,
+    default: false,
+  },
+  fileName: {
+    type: String,
+    default: "",
+  },
   attachments: {
     type: [Object],
     default: [],

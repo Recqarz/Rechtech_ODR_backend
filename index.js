@@ -12,11 +12,13 @@ const { expertRoute } = require("./routes/expert.route");
 const { appointAllRoute } = require("./routes/arbitratorassandnotify.route");
 const { meetingRoute } = require("./routes/meeting.route");
 const { caseRoute } = require("./module/cases/case.route");
+const webexRouter = require("./module/webex/webex.route");
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => {
   res.json({ message: "Server health is good" });
@@ -31,6 +33,7 @@ app.use("/cases", caseRoute);
 app.use("/experties", expertRoute);
 app.use("/arbitratorappointnotifyall", appointAllRoute);
 app.use("/meeting", meetingRoute);
+app.use("/webex", webexRouter);
 
 const port = process.env.PORT;
 

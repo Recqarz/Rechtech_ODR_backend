@@ -31,7 +31,6 @@ const createMeetings = async (req, res) => {
           enabledBreakoutSessions: true,
           timezone: "Asia/Kolkata",
           recordingEnabled: true,
-          autoRecordType: "local",
           attendees: [
             {
               email: cases.arbitratorEmail,

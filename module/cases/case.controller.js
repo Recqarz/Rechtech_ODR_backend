@@ -2,12 +2,12 @@ const path = require("path");
 const fs = require("fs");
 const { uploadFileToS3 } = require("../../utils/fileUtils");
 const { CASES } = require("./case.model");
+const { USER } = require("../users/user.model");
 
 const addCase = async (req, res) => {
   try {
-    // Parse the case data from JSON string
     const caseData = JSON.parse(req.body.caseData);
-    const fileNames = req.body.fileNames; // Get file names array
+    const fileNames = req.body.fileNames;
     const attachments = [];
 
     console.log("Received case data:", caseData);
@@ -39,6 +39,15 @@ const addCase = async (req, res) => {
         }
       }
     }
+
+    const clientId = caseData.clientId;
+    const client = await USER.findById(clientId);
+    if (!client) {
+      throw new Error("Client not found");
+    }
+    let noOfcase = parseInt(client.caseAdded) + 1;
+    client.caseAdded = noOfcase;
+    await client.save();
 
     // Create new case with the parsed data
     const newCase = new CASES({

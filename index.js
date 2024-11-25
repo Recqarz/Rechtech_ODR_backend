@@ -31,7 +31,7 @@ app.use("/client", clientRoute);
 app.use("/autouid", uidRoute);
 app.use("/cases", caseRoute);
 app.use("/experties", expertRoute);
-app.use("/arbitratorappointnotifyall", appointAllRoute);
+app.use("/arbitratorappointandnotifyall", appointAllRoute);
 app.use("/meeting", meetingRoute);
 app.use("/webex", webexRouter);
 

@@ -1,8 +1,8 @@
 require("dotenv").config();
 const argon2 = require("argon2");
 const { PASSWORDRESET } = require("../model/resetPassword.model");
-const { USER } = require("../model/user.model");
 const nodemailer = require("nodemailer");
+const { USER } = require("../module/users/user.model");
 
 const userExists = async (req, res) => {
   const { emailId } = req.body;

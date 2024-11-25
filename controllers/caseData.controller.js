@@ -1,7 +1,7 @@
 const xlsx = require("xlsx");
 const { CASEDATA } = require("../model/caseData.model");
-const { USER } = require("../model/user.model");
 const jwt = require("jsonwebtoken");
+const { USER } = require("../module/users/user.model");
 
 const handleCaseData = async (req, res) => {
   try {

@@ -1,4 +1,5 @@
-const { USER } = require("../model/user.model");
+const { USER } = require("../module/users/user.model");
+
 
 const allClient = async (req, res) => {
   try {

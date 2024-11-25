@@ -41,6 +41,10 @@ const userSchema = new mongoose.Schema(
       enum: ["admin", "client", "arbitrator"],
       default: "client",
     },
+    address: {
+      type: String,
+      default: "",
+    },
     areaOfExperties: {
       type: String,
       default: "",

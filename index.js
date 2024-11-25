@@ -2,7 +2,6 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const { connection } = require("./config/db.connection");
-const { userRoute } = require("./routes/user.route");
 const { resetPasswordRoute } = require("./routes/resetpassword.route");
 const { arbitratorRoute } = require("./routes/arbitrator.route");
 const { clientRoute } = require("./routes/client.route");
@@ -13,6 +12,7 @@ const { appointAllRoute } = require("./routes/arbitratorassandnotify.route");
 const { meetingRoute } = require("./routes/meeting.route");
 const { caseRoute } = require("./module/cases/case.route");
 const webexRouter = require("./module/webex/webex.route");
+const { userRoute } = require("./module/users/user.route");
 
 const app = express();
 

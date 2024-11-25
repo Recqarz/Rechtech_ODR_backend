@@ -1,7 +1,7 @@
 const {
   handleAuthSignup,
   handleAuthLogin,
-} = require("../controllers/user.controller");
+} = require("./user.controller");
 
 const userRoute = require("express").Router();
 

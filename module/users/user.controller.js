@@ -1,6 +1,6 @@
 const argon2 = require("argon2");
 const jwt = require("jsonwebtoken");
-const { USER } = require("../model/user.model");
+const { USER } = require("./user.model");
 
 const handleAuthSignup = async (req, res) => {
   let {password} = req.body;
@@ -15,7 +15,8 @@ const handleAuthSignup = async (req, res) => {
     areaOfExperties,
     experienceInYears,
     about,
-    uid
+    uid,
+    address
   } = req.body;
   console.log(areaOfExperties);
   try {
@@ -29,6 +30,7 @@ const handleAuthSignup = async (req, res) => {
       emailId,
       password: hash,
       role,
+      address,
       areaOfExperties,
       experienceInYears,
       about,

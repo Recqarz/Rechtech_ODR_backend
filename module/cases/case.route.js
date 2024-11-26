@@ -1,5 +1,5 @@
 // route.js
-const { addCase, getAutoCaseId, getAllCases } = require("./case.controller");
+const { addCase, getAutoCaseId, getAllCases, arbitratorCases, clientCases } = require("./case.controller");
 const express = require("express");
 const caseRoute = express.Router();
 const multer = require("multer");
@@ -43,5 +43,7 @@ caseRoute.post(
 );
 caseRoute.get("/auto-caseid", getAutoCaseId);
 caseRoute.get("/all-cases", getAllCases);
+caseRoute.get("/arbitratorcases", arbitratorCases);
+caseRoute.get("/clientcases", clientCases);
 
 module.exports = { caseRoute };

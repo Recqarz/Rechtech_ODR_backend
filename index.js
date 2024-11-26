@@ -9,7 +9,7 @@ const { uidRoute } = require("./routes/uid.route");
 // const { caseDataRoute } = require("./routes/caseData.route");
 const { expertRoute } = require("./routes/expert.route");
 const { appointAllRoute } = require("./routes/arbitratorassandnotify.route");
-const { meetingRoute } = require("./routes/meeting.route");
+// const { meetingRoute } = require("./routes/meeting.route");
 const { caseRoute } = require("./module/cases/case.route");
 const webexRouter = require("./module/webex/webex.route");
 const { userRoute } = require("./module/users/user.route");
@@ -32,7 +32,7 @@ app.use("/autouid", uidRoute);
 app.use("/cases", caseRoute);
 app.use("/experties", expertRoute);
 app.use("/arbitratorappointandnotifyall", appointAllRoute);
-app.use("/meeting", meetingRoute);
+// app.use("/meeting", meetingRoute);
 app.use("/webex", webexRouter);
 
 const port = process.env.PORT;

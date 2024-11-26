@@ -84,18 +84,26 @@ const initializeToken = async (req, res) => {
 };
 
 const createMeeting = async (req, res) => {
-  const { title, start, end } = req.body;
+  const { caseId, startTime, endTime, title } = req.body;
 
   try {
+    // const cases = await CASEDATA.findById(caseId);
     const response = await axios.post(
       process.env.CREATE_MEETING_ENDPOINT,
       {
         title,
-        start,
-        end,
+        start: startTime,
+        end: endTime,
         enabledAutoRecordMeeting: true,
         timezone: "Asia/Kolkata",
-        enabledJoinBeforeHost: true,
+        enabledJoinBeforeHost: false,
+        unlockedMeetingJoinSecurity: "allowJoinWithLobby",
+        enableAutomaticLock: true,
+        automaticLockMinutes: 0,
+        allowFirstUserToBeCoHost: false,
+        allowFirstUserToBeCoHost: false,
+        enabledBreakoutSessions: true,
+        recordingEnabled: true,
       },
       {
         headers: {
@@ -104,9 +112,11 @@ const createMeeting = async (req, res) => {
         },
       }
     );
-
+    // cases.meetings.push(response.data);
+    // await cases.save();
     res.status(201).send(response.data);
   } catch (err) {
+    // console.log(err);
     res.status(500).send({
       error: "Failed to create meeting",
       details: err.response?.data || err.message,

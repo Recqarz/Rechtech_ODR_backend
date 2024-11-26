@@ -58,7 +58,7 @@ async function ensureValidToken(req, res, next) {
 
 const initializeToken = async (req, res) => {
   const { code } = req.body;
-  
+
   try {
     const data = `grant_type=authorization_code&client_id=${process.env.CLIENT_ID}&client_secret=${process.env.CLIENT_SECRET}&code=${code}&state=set_state_here&redirect_uri=${process.env.REDIRECT_URI}`;
     const config = {
@@ -115,6 +115,7 @@ const createMeeting = async (req, res) => {
     );
     cases.meetings.push(response.data);
     await cases.save();
+    senEmailwithLinkandTime(cases, response.data.webLink, startTime, endTime)
     res.status(201).send(response.data);
   } catch (err) {
     res.status(500).send({

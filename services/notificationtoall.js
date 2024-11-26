@@ -66,7 +66,7 @@ const notificationtToall = async (cases) => {
         name: "Rechtech",
         address: process.env.GMAIL_APP_ID,
       },
-      to: [clientEmail],
+      to: clientEmail,
       subject: `Arbitrator Assign for Case ${cases?.caseId}`,
       html: `
         <div style="font-family: Arial, sans-serif; background: #f4f7fc; padding: 30px; line-height: 1.6; color: #333;">
@@ -111,7 +111,7 @@ const notificationtToall = async (cases) => {
         name: "Rechtech",
         address: process.env.GMAIL_APP_ID,
       },
-      to: [arbitratorEmail],
+      to: arbitratorEmail,
       subject: `Arbitrator Assign for Case ${cases?.caseId}`,
       html: `
       <div style="font-family: Arial, sans-serif; background: #f4f7fc; padding: 30px; line-height: 1.6; color: #333;">

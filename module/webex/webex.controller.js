@@ -1,7 +1,7 @@
 require("dotenv").config();
 const { default: axios } = require("axios");
 const GlobalToken = require("./webex.model");
-const qs = require("qs");
+const { CASES } = require("../cases/case.model");
 
 async function refreshGlobalAccessToken() {
   const tokenData = await GlobalToken.findOne();
@@ -58,6 +58,7 @@ async function ensureValidToken(req, res, next) {
 
 const initializeToken = async (req, res) => {
   const { code } = req.body;
+  
   try {
     const data = `grant_type=authorization_code&client_id=${process.env.CLIENT_ID}&client_secret=${process.env.CLIENT_SECRET}&code=${code}&state=set_state_here&redirect_uri=${process.env.REDIRECT_URI}`;
     const config = {
@@ -87,7 +88,7 @@ const createMeeting = async (req, res) => {
   const { caseId, startTime, endTime, title } = req.body;
 
   try {
-    const cases = await CASEDATA.findById(caseId);
+    const cases = await CASES.findById(caseId);
     const response = await axios.post(
       process.env.CREATE_MEETING_ENDPOINT,
       {

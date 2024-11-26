@@ -16,9 +16,7 @@ const senEmailwithLinkandTime = async (cases, link, startTime, endTime) => {
   let start = formatDateTime(startTime);
   let end = formatDateTime(endTime);
   try {
-    let defaulterEmails = cases?.defaulters?.map(
-      (defaulter) => defaulter.emailId
-    );
+    let defaulterEmails = cases?.respondentEmail
     let clientEmail = cases?.clientEmail;
     let arbitratorEmail = cases?.arbitratorEmail;
     const transporter = nodemailer.createTransport({

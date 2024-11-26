@@ -18,7 +18,6 @@ const handleAuthSignup = async (req, res) => {
     uid,
     address
   } = req.body;
-  console.log(areaOfExperties);
   try {
     const hash = await argon2.hash(password);
     if (!hash) {

@@ -62,7 +62,7 @@ const caseSchema = new mongoose.Schema({
     type: [Object],
     default: [],
   },
-  mettings: {
+  meetings: {
     type: [Object],
     default: [],
   },

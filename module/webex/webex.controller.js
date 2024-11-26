@@ -87,7 +87,7 @@ const createMeeting = async (req, res) => {
   const { caseId, startTime, endTime, title } = req.body;
 
   try {
-    // const cases = await CASEDATA.findById(caseId);
+    const cases = await CASEDATA.findById(caseId);
     const response = await axios.post(
       process.env.CREATE_MEETING_ENDPOINT,
       {
@@ -112,11 +112,10 @@ const createMeeting = async (req, res) => {
         },
       }
     );
-    // cases.meetings.push(response.data);
-    // await cases.save();
+    cases.meetings.push(response.data);
+    await cases.save();
     res.status(201).send(response.data);
   } catch (err) {
-    // console.log(err);
     res.status(500).send({
       error: "Failed to create meeting",
       details: err.response?.data || err.message,

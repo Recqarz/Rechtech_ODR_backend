@@ -3,16 +3,13 @@ const fs = require("fs");
 const { uploadFileToS3 } = require("../../utils/fileUtils");
 const { CASES } = require("./case.model");
 const { USER } = require("../users/user.model");
+const jwt = require("jsonwebtoken");
 
 const addCase = async (req, res) => {
   try {
     const caseData = JSON.parse(req.body.caseData);
     const fileNames = req.body.fileNames;
     const attachments = [];
-
-    console.log("Received case data:", caseData);
-    console.log("Received files:", req.files);
-    console.log("Received file names:", fileNames);
 
     // Process files if they exist
     if (req.files && req.files.length > 0) {
@@ -101,7 +98,7 @@ const getAutoCaseId = async (req, res) => {
 
 const getAllCases = async (req, res) => {
   try {
-    const data = await CASES.find();
+    const data = await CASES.find().sort({ _id: -1 });
     return res.status(200).json({ cases: data });
   } catch (err) {
     console.error("Error getting all cases:", err.message);
@@ -109,4 +106,64 @@ const getAllCases = async (req, res) => {
   }
 };
 
-module.exports = { addCase, getAutoCaseId, getAllCases };
+const arbitratorCases = async (req, res) => {
+  const { token } = req.headers;
+
+  if (!token) {
+    return res.status(401).json({ message: "Token not provided" });
+  }
+  try {
+    const decoded = jwt.verify(
+      token?.split(" ")[1],
+      process.env.JWT_SECRET_KEY
+    );
+    if (!decoded) {
+      return res.status(401).json({ message: "Invalid token" });
+    }
+    const id = decoded.id;
+    const caseData = await CASES.find({ arbitratorId: id }).sort({ _id: -1 });
+    if (!caseData) {
+      return res.status(404).json({ message: "Case data not found" });
+    }
+    res.status(200).json({ caseData });
+  } catch (err) {
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+const clientCases = async (req, res) => {
+  const { token } = req.headers;
+
+  if (!token) {
+    return res.status(401).json({ message: "Token not provided" });
+  }
+  try {
+    const decoded = jwt.verify(
+      token?.split(" ")[1],
+      process.env.JWT_SECRET_KEY
+    );
+    if (!decoded) {
+      return res.status(401).json({ message: "Invalid token" });
+    }
+    const id = decoded.id;
+    const user = await USER.findById(id);
+    if (!user) {
+      return res.status(402).json({ message: "Invalid user id" });
+    }
+    const caseData = await CASES.find({ clientId: user.uid }).sort({ _id: -1 });
+    if (!caseData) {
+      return res.status(404).json({ message: "Case data not found" });
+    }
+    res.status(200).json({ caseData });
+  } catch (err) {
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+module.exports = {
+  addCase,
+  getAutoCaseId,
+  getAllCases,
+  arbitratorCases,
+  clientCases,
+};

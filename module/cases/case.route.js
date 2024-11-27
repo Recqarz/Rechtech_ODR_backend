@@ -12,6 +12,7 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const { updateMeetStatus } = require("../webex/webex.controller");
+const { bulkAddCasesRoute } = require("./bulkupload.controller");
 
 // Configure multer storage
 const storage = multer.diskStorage({
@@ -31,6 +32,7 @@ const upload = multer({ storage });
 
 // Fixed route configuration
 caseRoute.post("/addcase", upload.array("files"), addCase);
+caseRoute.use("/bulkupload", bulkAddCasesRoute);
 caseRoute.put("/updatemeetstatus", updateMeetStatus);
 caseRoute.get("/auto-caseid", getAutoCaseId);
 caseRoute.get("/all-cases", getAllCases);

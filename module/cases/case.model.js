@@ -66,6 +66,10 @@ const caseSchema = new mongoose.Schema({
     type: [Object],
     default: [],
   },
+  recordings: {
+    type: [String],
+    default: [],
+  },
   arbitratorId: {
     type: String,
     default: "",

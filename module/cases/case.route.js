@@ -30,6 +30,7 @@ const upload = multer({ storage });
 
 // Fixed route configuration
 caseRoute.post("/addcase", upload.array("files"), addCase);
+caseRoute.put("/updatemeetstatus", updateMeetStatus);
 caseRoute.get("/auto-caseid", getAutoCaseId);
 caseRoute.get("/all-cases", getAllCases);
 caseRoute.get("/arbitratorcases", arbitratorCases);

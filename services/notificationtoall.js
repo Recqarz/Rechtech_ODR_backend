@@ -1,7 +1,7 @@
 require("dotenv").config();
 const nodemailer = require("nodemailer");
 
-const notificationtToall = async (cases) => {
+const notificationToall = async (cases) => {
   let respondentEmail = cases?.respondentEmail;
   let clientEmail = cases?.clientEmail;
   let arbitratorEmail = cases?.arbitratorEmail;
@@ -59,7 +59,7 @@ const notificationtToall = async (cases) => {
     </div>
       `,
     };
-    await transporter.sendMail(mailOptions);
+    transporter.sendMail(mailOptions);
 
     const clientmailOptions = {
       from: {
@@ -104,7 +104,7 @@ const notificationtToall = async (cases) => {
     </div>
       `,
     };
-    await transporter.sendMail(clientmailOptions);
+    transporter.sendMail(clientmailOptions);
 
     const arbitratormailOptions = {
       from: {
@@ -150,7 +150,7 @@ const notificationtToall = async (cases) => {
 
       `,
     };
-    await transporter.sendMail(arbitratormailOptions);
+    transporter.sendMail(arbitratormailOptions);
 
     return "Emails sent successfully";
   } catch (err) {
@@ -158,4 +158,4 @@ const notificationtToall = async (cases) => {
   }
 };
 
-module.exports = { notificationtToall };
+module.exports = { notificationToall };

@@ -1,27 +1,41 @@
-// const multer = require("multer");
-// const storage = multer.memoryStorage();
-// const upload = multer({
-//   storage: storage,
-//   limits: { fileSize: 5 * 1024 * 1024 },
-// });
-// const {
-//   handleCaseData,
-//   // handleGetCaseData,
-//   // handleGetOneCaseData,
-//   // arbitratorCases,
-//   // clientCases,
-// } = require("../controllers/caseData.controller");
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
 
-// const caseDataRoute = require("express").Router();
+// Configure multer disk storage
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadPath = path.join(__dirname, "../uploads");
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath); // Create folder if it doesn't exist
+    }
+    cb(null, uploadPath);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + "-" + file.originalname);
+  },
+});
 
-// caseDataRoute.post("/", upload.single("excelFile"), handleCaseData);
+const upload = multer({ storage: storage });
+const {
+  handleCaseData,
+  handleGetCaseData,
+  handleGetOneCaseData,
+  arbitratorCases,
+  clientCases,
+} = require("../controllers/caseData.controller");
 
-// // caseDataRoute.get("/", handleGetCaseData);
+const caseDataRoute = require("express").Router();
 
-// // caseDataRoute.get("/specific/:id", handleGetOneCaseData);
+caseDataRoute.post("/", upload.single("excelFile"), handleCaseData);
 
-// // caseDataRoute.get("/arbitratorcases", arbitratorCases);
+caseDataRoute.get("/", handleGetCaseData);
 
-// // caseDataRoute.get("/clientcases", clientCases);
+caseDataRoute.get("/specific/:id", handleGetOneCaseData);
 
-// module.exports = { caseDataRoute };
+caseDataRoute.get("/arbitratorcases", arbitratorCases);
+
+caseDataRoute.get("/clientcases", clientCases);
+
+module.exports = { caseDataRoute };

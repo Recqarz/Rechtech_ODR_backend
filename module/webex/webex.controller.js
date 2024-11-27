@@ -2,7 +2,9 @@ require("dotenv").config();
 const { default: axios } = require("axios");
 const GlobalToken = require("./webex.model");
 const { CASES } = require("../cases/case.model");
-const { senEmailwithLinkandTime } = require("../../services/senEmailwithLinkandTime");
+const {
+  senEmailwithLinkandTime,
+} = require("../../services/senEmailwithLinkandTime");
 
 async function refreshGlobalAccessToken() {
   const tokenData = await GlobalToken.findOne();
@@ -87,7 +89,6 @@ const initializeToken = async (req, res) => {
 
 const createMeeting = async (req, res) => {
   const { caseId, startTime, endTime, title } = req.body;
-
   try {
     const cases = await CASES.findById(caseId);
     const response = await axios.post(
@@ -116,10 +117,10 @@ const createMeeting = async (req, res) => {
     );
     cases.meetings.push(response.data);
     await cases.save();
-    senEmailwithLinkandTime(cases, response.data.webLink, startTime, endTime)
+    senEmailwithLinkandTime(cases, response.data.webLink, startTime, endTime);
     return res.status(201).send(response.data);
   } catch (err) {
-    console.log(err)
+    console.log(err);
     res.status(500).send({
       error: "Failed to create meeting",
       details: err.response?.data || err.message,
@@ -127,4 +128,33 @@ const createMeeting = async (req, res) => {
   }
 };
 
-module.exports = { createMeeting, initializeToken, ensureValidToken };
+const updateMeetStatus = async (req, res) => {
+  const { id } = req.body;
+  try {
+    const cases = await CASES.findById(id);
+    cases.isMeetCompleted = true;
+    await cases.save();
+    return res
+      .status(200)
+      .send({ message: "Meeting status updated successfully" });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({
+      error: "Failed to update meeting status",
+      details: err.response?.data || err.message,
+    });
+  }
+};
+
+const getRecorings = async (req, res) => {
+  const { meetingId } = req.params;
+  try {
+  } catch (err) {
+    res.status(500).send({
+      error: "Failed to get recorings",
+      details: err.response?.data || err.message,
+    });
+  }
+};
+
+module.exports = { createMeeting, initializeToken, ensureValidToken, updateMeetStatus };

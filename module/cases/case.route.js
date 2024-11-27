@@ -11,6 +11,7 @@ const caseRoute = express.Router();
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const { updateMeetStatus } = require("../webex/webex.controller");
 
 // Configure multer storage
 const storage = multer.diskStorage({
@@ -30,6 +31,7 @@ const upload = multer({ storage });
 
 // Fixed route configuration
 caseRoute.post("/addcase", upload.array("files"), addCase);
+caseRoute.put("/updatemeetstatus", updateMeetStatus);
 caseRoute.get("/auto-caseid", getAutoCaseId);
 caseRoute.get("/all-cases", getAllCases);
 caseRoute.get("/arbitratorcases", arbitratorCases);

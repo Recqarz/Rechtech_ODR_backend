@@ -20,20 +20,19 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.get("/", (req, res) => {
+app.get("/api/", (req, res) => {
   res.json({ message: "Server health is good" });
 });
-
-app.use("/auth", userRoute);
-app.use("/resetpassword", resetPasswordRoute);
-app.use("/arbitrator", arbitratorRoute);
-app.use("/client", clientRoute);
-app.use("/autouid", uidRoute);
-app.use("/cases", caseRoute);
-app.use("/experties", expertRoute);
-app.use("/arbitratorappointandnotifyall", appointAllRoute);
-// app.use("/meeting", meetingRoute);
-app.use("/webex", webexRouter);
+app.use("/api/auth", userRoute);
+app.use("/api/resetpassword", resetPasswordRoute);
+app.use("/api/arbitrator", arbitratorRoute);
+app.use("/api/client", clientRoute);
+app.use("/api/autouid", uidRoute);
+app.use("/api/cases", caseRoute);
+app.use("/api/experties", expertRoute);
+app.use("/api/arbitratorappointandnotifyall", appointAllRoute);
+// app.us/apie("/meeting", meetingRoute);
+app.use("/api/webex", webexRouter);
 
 const port = process.env.PORT;
 

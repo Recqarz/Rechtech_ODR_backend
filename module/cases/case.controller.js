@@ -4,6 +4,7 @@ const { uploadFileToS3 } = require("../../utils/fileUtils");
 const { CASES } = require("./case.model");
 const { USER } = require("../users/user.model");
 const jwt = require("jsonwebtoken");
+const { sendEmailsforCases } = require("../../services/sendemailforcases");
 
 const addCase = async (req, res) => {
   try {
@@ -53,6 +54,8 @@ const addCase = async (req, res) => {
     });
 
     await newCase.save();
+    const respondentEmail = newCase.respondentEmail;
+    sendEmailsforCases(respondentEmail);
     res.status(201).json({
       success: true,
       message: "Case added successfully",

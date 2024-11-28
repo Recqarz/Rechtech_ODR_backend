@@ -5,6 +5,7 @@ const notificationToall = async (cases) => {
   let respondentEmail = cases?.respondentEmail;
   let clientEmail = cases?.clientEmail;
   let arbitratorEmail = cases?.arbitratorEmail;
+  console.log(respondentEmail, clientEmail, arbitratorEmail);
 
   try {
     const transporter = nodemailer.createTransport({
@@ -154,7 +155,7 @@ const notificationToall = async (cases) => {
 
     return "Emails sent successfully";
   } catch (err) {
-    throw new Error(err.message || err);
+    console.log(err)
   }
 };
 

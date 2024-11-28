@@ -4,6 +4,7 @@ const path = require("path");
 const fs = require("fs");
 const xlsx = require("xlsx");
 const { CASES } = require("./case.model");
+const { sendEmailsforCases } = require("../../services/sendemailforcases");
 
 // Configure multer disk storage
 const storage = multer.diskStorage({
@@ -66,6 +67,7 @@ bulkAddCasesRoute.post("/", upload.single("excelFile"), async (req, res) => {
     const bulkInsertData = respondentData.map((ele, index) => {
       const caseNumber = currentCaseCount + index + 1; // Dynamic case count
       let caseId = `CS${caseNumber.toString().padStart(2, "0")}`; // Generate a case ID
+      sendEmailsforCases(ele.respondentName, ele.respondentEmail);
       return {
         caseId,
         clientName,
@@ -84,6 +86,8 @@ bulkAddCasesRoute.post("/", upload.single("excelFile"), async (req, res) => {
       };
     });
 
+    // const bulkInsertDatas = bulkInsertData.map(item => item.respondentEmail);
+
     // Insert all data into MongoDB
     await CASES.insertMany(bulkInsertData);
 
@@ -97,7 +101,7 @@ bulkAddCasesRoute.post("/", upload.single("excelFile"), async (req, res) => {
     });
   } catch (error) {
     if (req.file && fs.existsSync(req.file.path)) {
-      fs.unlinkSync(req.file.path); // Delete the file on error
+      fs.unlinkSync(req.file.path);
     }
     console.error("Error processing file:", error);
     return res.status(500).json({

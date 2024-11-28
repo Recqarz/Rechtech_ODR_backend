@@ -10,6 +10,7 @@ const addExperties = async (req, res) => {
     await expertise.save();
     res.status(201).json({ message: "Expertise added successfully" });
   } catch (err) {
+    console.log(err);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
@@ -19,6 +20,7 @@ const allExperties = async (req, res) => {
     const experties = await EXPERTIES.find();
     res.status(200).json({ experties });
   } catch (err) {
+    console.log(err);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };

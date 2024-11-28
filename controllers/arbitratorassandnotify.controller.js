@@ -1,7 +1,9 @@
 const { CASES } = require("../module/cases/case.model");
 const { USER } = require("../module/users/user.model");
 const {
-  notificationToall,
+  notificationToclientforcaseassign,
+  notificationToarbitratorforcaseassign,
+  notificationTorespondentforcaseassign,
 } = require("../services/notificationtoall");
 
 const appointArbitratorandNotify = async (req, res) => {
@@ -16,7 +18,9 @@ const appointArbitratorandNotify = async (req, res) => {
     const user = await USER.findOne({ emailId: arbitratorEmail });
     let noOfAssignCase = parseInt(user.noOfAssignCase) + 1;
     await USER.findByIdAndUpdate(user._id, { noOfAssignCase }, { new: true });
-    await notificationToall(cases);
+    notificationToarbitratorforcaseassign(cases);
+    notificationToclientforcaseassign(cases);
+    notificationTorespondentforcaseassign(cases);
     return res.status(200).json({
       message: "Arbitrator Appointed and Notification sent successfully",
       updatedCases,
@@ -39,7 +43,9 @@ const appointArbitratorandNotifyBulk = async (req, res) => {
         cases.arbitratorEmail = arbitratorEmail;
         cases.isArbitratorAssigned = true;
         await cases.save();
-        notificationToall(cases);
+        notificationToarbitratorforcaseassign(cases);
+        notificationToclientforcaseassign(cases);
+        notificationTorespondentforcaseassign(cases);
         count++;
       }
     }
@@ -47,7 +53,7 @@ const appointArbitratorandNotifyBulk = async (req, res) => {
     let noOfAssignCase = parseInt(user.noOfAssignCase) + count;
     await USER.findByIdAndUpdate(user._id, { noOfAssignCase }, { new: true });
     return res.status(200).json({
-      message: "Arbitrator Appointed and Notification sent successfully"
+      message: "Arbitrator Appointed and Notification sent successfully",
     });
   } catch (err) {
     console.log(err);

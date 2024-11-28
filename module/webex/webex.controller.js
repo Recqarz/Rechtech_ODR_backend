@@ -2,9 +2,10 @@ require("dotenv").config();
 const { default: axios } = require("axios");
 const GlobalToken = require("./webex.model");
 const { CASES } = require("../cases/case.model");
-const {
-  senEmailwithLinkandTime,
-} = require("../../services/senEmailwithLinkandTime");
+const { notificationForMeetingSchedule } = require("../../services/senEmailwithLinkandTime");
+// const {
+//   senEmailwithLinkandTime,
+// } = require("../../services/senEmailwithLinkandTime");
 
 async function refreshGlobalAccessToken() {
   const tokenData = await GlobalToken.findOne();
@@ -117,7 +118,8 @@ const createMeeting = async (req, res) => {
     );
     cases.meetings.push(response.data);
     await cases.save();
-    senEmailwithLinkandTime(cases, response.data.webLink, startTime, endTime);
+    // senEmailwithLinkandTime(cases, response.data.webLink, startTime, endTime);
+    notificationForMeetingSchedule(cases, response.data.webLink, startTime, endTime)
     return res.status(201).send(response.data);
   } catch (err) {
     console.log(err);

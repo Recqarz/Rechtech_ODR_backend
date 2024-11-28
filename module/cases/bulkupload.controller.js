@@ -68,6 +68,12 @@ bulkAddCasesRoute.post("/", upload.single("excelFile"), async (req, res) => {
       const caseNumber = currentCaseCount + index + 1; // Dynamic case count
       let caseId = `CS${caseNumber.toString().padStart(2, "0")}`; // Generate a case ID
       sendEmailsforCases(ele.respondentName, ele.respondentEmail);
+      const attachments = ele.attachments.includes(",")
+        ? ele.attachments.split(",").map((url, idx) => {
+            const name = `file${idx + 1}`; // file1, file2, etc.
+            return { name, url }; // Return the object with the unique name and url
+          })
+        : [{ name: "file1", url: ele.attachments }];
       return {
         caseId,
         clientName,
@@ -80,7 +86,7 @@ bulkAddCasesRoute.post("/", upload.single("excelFile"), async (req, res) => {
         respondentMobile: ele.respondentMobile,
         disputeType: disputeType,
         respondentAddress: ele.respondentAddress,
-        attachments: ele.attachments.split(","), // Split attachments into an array
+        attachments, // Split attachments into an array
         isFileUpload: true,
         fileName: req.file.originalname,
       };

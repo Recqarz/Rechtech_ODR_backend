@@ -54,8 +54,8 @@ const addCase = async (req, res) => {
     });
 
     await newCase.save();
-    const respondentEmail = newCase.respondentEmail;
-    sendEmailsforCases(respondentEmail);
+    const {respondentEmail, respondentName} = newCase;
+    sendEmailsforCases(respondentName, respondentEmail);
     res.status(201).json({
       success: true,
       message: "Case added successfully",

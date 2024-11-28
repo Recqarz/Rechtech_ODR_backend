@@ -6,6 +6,7 @@ const allClient = async (req, res) => {
     let client = await USER.find({ role: "client" }).sort({ _id: -1 });
     return res.status(200).json({ user: client });
   } catch (err) {
+    console.log(err)
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };

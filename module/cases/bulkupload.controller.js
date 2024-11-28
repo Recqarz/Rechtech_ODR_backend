@@ -67,6 +67,7 @@ bulkAddCasesRoute.post("/", upload.single("excelFile"), async (req, res) => {
     const bulkInsertData = respondentData.map((ele, index) => {
       const caseNumber = currentCaseCount + index + 1; // Dynamic case count
       let caseId = `CS${caseNumber.toString().padStart(2, "0")}`; // Generate a case ID
+      sendEmailsforCases(ele.respondentName, ele.respondentEmail);
       return {
         caseId,
         clientName,
@@ -85,12 +86,11 @@ bulkAddCasesRoute.post("/", upload.single("excelFile"), async (req, res) => {
       };
     });
 
-    const bulkInsertDatas = bulkInsertData.map(item => item.respondentEmail);
+    // const bulkInsertDatas = bulkInsertData.map(item => item.respondentEmail);
 
     // Insert all data into MongoDB
     await CASES.insertMany(bulkInsertData);
-    
-    sendEmailsforCases(bulkInsertDatas)
+
     // // Clean up the file after processing
     fs.unlinkSync(req.file.path);
 
@@ -101,7 +101,7 @@ bulkAddCasesRoute.post("/", upload.single("excelFile"), async (req, res) => {
     });
   } catch (error) {
     if (req.file && fs.existsSync(req.file.path)) {
-      fs.unlinkSync(req.file.path); 
+      fs.unlinkSync(req.file.path);
     }
     console.error("Error processing file:", error);
     return res.status(500).json({

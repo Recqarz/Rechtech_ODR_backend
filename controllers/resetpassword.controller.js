@@ -25,21 +25,11 @@ const userExists = async (req, res) => {
       from: process.env.SENDGRID_SENDER_EMAIL, // Verified sender email
       subject: "Your Password Reset OTP",
       html: `
-        <div style="font-family: Arial, sans-serif; background: #f4f7fc; padding: 30px; line-height: 1.6; color: #333;">
-          <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); overflow: hidden;">
-            <header style="background: #0275d8; color: #fff; padding: 20px; text-align: center;">
-              <h2 style="margin-left: 20px; font-size: 24px; margin-top:10px;">Hi ${user.name},</h2>
-            </header>
-            <div style="padding: 20px;">
-              <p style="font-size: 16px; color: #555;">Your OTP to reset your password is: <strong>${otp}</strong></p>
-              <p style="font-size: 16px; color: #555;">Please enter this code to proceed with resetting your password.</p>
-            </div>
-            <footer style="margin: 0; font-size: 16px; text-align: center; padding: 10px;">
-              <h2 style="margin: 0; font-size: 16px; color: #555; font-weight: bold; font-style: italic;">Best regards,</h2>
-              <p style="margin: 0; font-size: 14px; color: #999;">Team RecQarz</p>
-            </footer>
-          </div>
-        </div>
+      <h4>Hi ${user.name},</h4>
+      <p>Your OTP to reset your password is: <b>${otp}</b></p>
+      <p>Please enter this code to proceed with resetting your password.</p>
+      <h4>Best regards,</h4>
+      <p>Team Sandhee</p>
       `,
     };
 

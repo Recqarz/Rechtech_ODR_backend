@@ -2,9 +2,8 @@ require("dotenv").config();
 const sgMail = require("@sendgrid/mail");
 const { USER } = require("../module/users/user.model");
 
-const sendEmailsforCases = async (bulkInsertDatas) => {
+const sendEmailsforCases = async (name, email) => {
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-
   try {
     // Fetch the list of arbitrators
     const arbitrators = await USER.find({ role: "arbitrator" });
@@ -20,11 +19,14 @@ const sendEmailsforCases = async (bulkInsertDatas) => {
 
     // Create the email message
     const msg = {
-      to: bulkInsertDatas, // List of recipients
+      to: email, // List of recipients
       from: process.env.SENDGRID_SENDER_EMAIL, // Verified sender email
-      subject: "Selection of arbitrator",
+      subject: "Action Required: Selection of Arbitrator for Your Case",
       html: `
-          <h1>Please select the arbitrator from below list</h1>
+          <h4>Dear ${name},</h4>
+          <p>We hope this message finds you well.</p>
+          <p>In connection with the recent proceedings initiated on the Sandhee Platform, we request you to select an arbitrator from the list provided below within 7 days of receiving this email.
+          Please find the options for arbitrators:</p>
           <ul>
             ${arbitratorList}
           </ul>
@@ -34,13 +36,14 @@ const sendEmailsforCases = async (bulkInsertDatas) => {
     // Send the email
     await sgMail.send(msg);
     console.log("Email sent successfully.");
+
     return true;
   } catch (error) {
     console.error("Error fetching arbitrators or sending email:", error);
     if (error.response) {
       console.error("Error response body:", error.response.body);
     }
-    throw new Error("Failed to send arbitrator list email");
+    return false;
   }
 };
 

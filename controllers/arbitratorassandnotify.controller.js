@@ -33,7 +33,7 @@ const appointArbitratorandNotifyBulk = async (req, res) => {
   try {
     for (const caseData of data) {
       const cases = await CASES.findById(caseData);
-      if (!isArbitratorAssigned) {
+      if (!cases.isArbitratorAssigned) {
         cases.arbitratorName = arbitratorName;
         cases.arbitratorId = arbitratorId;
         cases.arbitratorEmail = arbitratorEmail;
@@ -47,8 +47,7 @@ const appointArbitratorandNotifyBulk = async (req, res) => {
     let noOfAssignCase = parseInt(user.noOfAssignCase) + count;
     await USER.findByIdAndUpdate(user._id, { noOfAssignCase }, { new: true });
     return res.status(200).json({
-      message: "Arbitrator Appointed and Notification sent successfully",
-      updatedCases,
+      message: "Arbitrator Appointed and Notification sent successfully"
     });
   } catch (err) {
     console.log(err);

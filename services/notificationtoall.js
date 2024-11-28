@@ -240,7 +240,7 @@ const notificationToclientforcaseassign = async (cases) => {
           <h4>Below are the details:</h4>
           <p><b>Arbitrator Name: </b>${cases.arbitratorName}</p>
           <p><b>Contact Information: </b>${cases.arbitratorEmail}</p>
-          <p><b>Client Name: SBI: </b>${cases.clientName}</p>
+          <p><b>Client Name: </b>${cases.clientName}</p>
           <h4>Best regards,</h4>
           <p>Team Sandhee</p>
           `,

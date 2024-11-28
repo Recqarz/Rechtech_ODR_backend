@@ -169,10 +169,10 @@ const notificationToarbitratorforcaseassign = async (cases) => {
       from: process.env.SENDGRID_SENDER_EMAIL, // Verified sender email
       subject: "Appointment as Arbitrator for Case(s)",
       html: `
-          <h4>Dear ${cases.arbitratorname},</h4>
+          <h4>Dear ${cases.arbitratorName},</h4>
           <p>You have been appointed as the arbitrator for the following cases on behalf of ${cases.clientName}.</p>
           <p><b>Client Name: </b>${cases.clientName}</p>
-          <p><b>File Reference: </b>${cases?.fileName}</p>
+          <p><b>File Reference: </b>${cases.fileName ? cases?.fileName : "NA"}</p>
           <h4>Best regards,</h4>
           <p>Team Sandhee</p>
           `,
@@ -263,6 +263,6 @@ const notificationToclientforcaseassign = async (cases) => {
 
 module.exports = {
   notificationToarbitratorforcaseassign,
-  notificationToclientforcaseassign,
-  notificationTorespondentforcaseassign
+  notificationTorespondentforcaseassign,
+  notificationToclientforcaseassign
 };

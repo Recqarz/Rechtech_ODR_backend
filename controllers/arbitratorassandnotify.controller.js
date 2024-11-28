@@ -18,9 +18,9 @@ const appointArbitratorandNotify = async (req, res) => {
     const user = await USER.findOne({ emailId: arbitratorEmail });
     let noOfAssignCase = parseInt(user.noOfAssignCase) + 1;
     await USER.findByIdAndUpdate(user._id, { noOfAssignCase }, { new: true });
-    notificationToarbitratorforcaseassign(cases);
-    notificationToclientforcaseassign(cases);
-    notificationTorespondentforcaseassign(cases);
+    notificationToarbitratorforcaseassign(updatedCases);
+    notificationToclientforcaseassign(updatedCases);
+    notificationTorespondentforcaseassign(updatedCases);
     return res.status(200).json({
       message: "Arbitrator Appointed and Notification sent successfully",
       updatedCases,
@@ -42,10 +42,10 @@ const appointArbitratorandNotifyBulk = async (req, res) => {
         cases.arbitratorId = arbitratorId;
         cases.arbitratorEmail = arbitratorEmail;
         cases.isArbitratorAssigned = true;
-        await cases.save();
-        notificationToarbitratorforcaseassign(cases);
-        notificationToclientforcaseassign(cases);
-        notificationTorespondentforcaseassign(cases);
+        const updatedCases = await cases.save();
+        notificationToarbitratorforcaseassign(updatedCases);
+        notificationToclientforcaseassign(updatedCases);
+        notificationTorespondentforcaseassign(updatedCases);
         count++;
       }
     }

@@ -7,6 +7,7 @@ const {
   clientCases,
   caseWithAccountNumber,
   allRespondentCases,
+  addAward,
 } = require("./case.controller");
 const express = require("express");
 const caseRoute = express.Router();
@@ -32,6 +33,32 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
+const storages = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/'); // Temporary upload directory
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    cb(null, `${uniqueSuffix}-${file.originalname}`);
+  },
+});
+
+const fileFilter = (req, file, cb) => {
+  const allowedMimeTypes = [
+    'application/vnd.ms-excel', // .xls
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+    'application/pdf', // .pdf
+  ];
+
+  if (allowedMimeTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Invalid file type. Only Excel or PDF files are allowed.'), false);
+  }
+};
+
+const uploads = multer({ storages, fileFilter });
+
 // Fixed route configuration
 caseRoute.post("/addcase", upload.array("files"), addCase);
 caseRoute.use("/bulkupload", bulkAddCasesRoute);
@@ -42,6 +69,6 @@ caseRoute.get("/arbitratorcases", arbitratorCases);
 caseRoute.get("/clientcases", clientCases);
 caseRoute.get("/casewithaccountnumber/:accountNumber", caseWithAccountNumber);
 caseRoute.get("/allrespondentcases", allRespondentCases);
-// cashRoute.post("/")
+cashRoute.post("/uploadawards", uploads.single('file'), addAward);
 
 module.exports = { caseRoute };

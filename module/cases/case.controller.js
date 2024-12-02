@@ -227,6 +227,8 @@ const addAward = async (req, res) => {
 
     // Respond with the S3 URL
     const cases = await CASES.findById(caseId);
+    cases.isAwardCompleted = true;
+    cases.isCaseResolved = true;
     cases.awards.push(s3Response.Location);
     await cases.save();
     res.status(200).json({ message: "File uploaded successfully" });
@@ -244,5 +246,5 @@ module.exports = {
   clientCases,
   caseWithAccountNumber,
   allRespondentCases,
-  addAward
+  addAward,
 };

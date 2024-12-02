@@ -80,6 +80,14 @@ const caseSchema = new mongoose.Schema(
       default: [],
     },
     recordings: {
+      type: [Object],
+      default: [],
+    },
+    orderSheet: {
+      type: [String],
+      default: [],
+    },
+    awards: {
       type: [String],
       default: [],
     },

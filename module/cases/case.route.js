@@ -42,5 +42,6 @@ caseRoute.get("/arbitratorcases", arbitratorCases);
 caseRoute.get("/clientcases", clientCases);
 caseRoute.get("/casewithaccountnumber/:accountNumber", caseWithAccountNumber);
 caseRoute.get("/allrespondentcases", allRespondentCases);
+// cashRoute.post("/")
 
 module.exports = { caseRoute };

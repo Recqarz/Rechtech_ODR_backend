@@ -2,10 +2,11 @@ require("dotenv").config();
 const { default: axios } = require("axios");
 const GlobalToken = require("./webex.model");
 const { CASES } = require("../cases/case.model");
-const { notificationForMeetingSchedule } = require("../../services/senEmailwithLinkandTime");
-// const {
-//   senEmailwithLinkandTime,
-// } = require("../../services/senEmailwithLinkandTime");
+const {
+  notificationForMeetingSchedule,
+} = require("../../services/senEmailwithLinkandTime");
+const schedule = require("node-schedule");
+const MAX_RETRIES = 4;
 
 async function refreshGlobalAccessToken() {
   const tokenData = await GlobalToken.findOne();
@@ -118,8 +119,112 @@ const createMeeting = async (req, res) => {
     );
     cases.meetings.push(response.data);
     const ncases = await cases.save();
-    // senEmailwithLinkandTime(cases, response.data.webLink, startTime, endTime);
-    notificationForMeetingSchedule(ncases, response.data.webLink, startTime, endTime)
+    notificationForMeetingSchedule(
+      ncases,
+      response.data.webLink,
+      startTime,
+      endTime
+    );
+    scheduleJobForRecording(response.data.id, caseId, response.data.end);
+    return res.status(201).send(response.data);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({
+      error: "Failed to create meeting",
+      details: err.response?.data || err.message,
+    });
+  }
+};
+
+const scheduleJobForRecordingBulk = (meetingId, caseId, meetingEndTime) => {
+  const meetingEnd = new Date(meetingEndTime);
+
+  const firstRetryTime = new Date(meetingEnd);
+  firstRetryTime.setDate(firstRetryTime.getDate() + 1);
+  firstRetryTime.setHours(0, 10, 0, 0);
+  let retryCount = 0;
+  const scheduleNextRetry = (retryTime) => {
+    console.log(
+      `Scheduling retry #${
+        retryCount + 1
+      } for meetingId: ${meetingId} at ${retryTime}`
+    );
+    const job = schedule.scheduleJob(
+      `${meetingId}_retry_${retryCount}`,
+      retryTime,
+      async () => {
+        console.log(
+          `Running retry #${retryCount + 1} for meetingId: ${meetingId}`
+        );
+        const recording = await fetchRecording(meetingId);
+
+        if (recording) {
+          // I have array of caseId so i can add the recording in each case
+          for (let i = 0; i < caseId.length; i++) {
+            const cases = await CASES.findById(caseId[i]);
+            cases.recordings.push(recording);
+            await cases.save();
+          }
+          job.cancel();
+        } else {
+          retryCount++;
+          if (retryCount < MAX_RETRIES) {
+            const nextRetryTime = new Date(
+              retryTime.getTime() + 60 * 60 * 1000
+            );
+            scheduleNextRetry(nextRetryTime);
+          } else {
+            console.log(
+              `Recording not available for meetingId: ${meetingId} after ${MAX_RETRIES} retries. Giving up.`
+            );
+            job.cancel();
+          }
+        }
+      }
+    );
+  };
+  scheduleNextRetry(firstRetryTime);
+};
+
+const createMeetingforBulk = async (req, res) => {
+  const { caseIdForMeeting: caseId, startTime, endTime, title } = req.body;
+  try {
+    const response = await axios.post(
+      process.env.CREATE_MEETING_ENDPOINT,
+      {
+        title,
+        start: startTime,
+        end: endTime,
+        enabledAutoRecordMeeting: true,
+        timezone: "Asia/Kolkata",
+        enabledJoinBeforeHost: false,
+        unlockedMeetingJoinSecurity: "allowJoinWithLobby",
+        enableAutomaticLock: true,
+        automaticLockMinutes: 0,
+        allowFirstUserToBeCoHost: false,
+        allowFirstUserToBeCoHost: false,
+        enabledBreakoutSessions: true,
+        recordingEnabled: true,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${req.globalAccessToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    for (let i = 0; i < caseId.length; i++) {
+      const cases = await CASES.findById(caseId[i]);
+      cases.meetings.push(response.data);
+      const ncases = await cases.save();
+      notificationForMeetingSchedule(
+        ncases,
+        response.data.webLink,
+        startTime,
+        endTime
+      );
+    }
+    scheduleJobForRecordingBulk(response.data.id, caseId, response.data.end);
     return res.status(201).send(response.data);
   } catch (err) {
     console.log(err);
@@ -148,15 +253,100 @@ const updateMeetStatus = async (req, res) => {
   }
 };
 
-const getRecorings = async (req, res) => {
-  const { meetingId } = req.params;
+async function ensureValidTokenforRecording() {
   try {
+    let tokenData = await GlobalToken.findOne();
+
+    if (!tokenData) {
+      return res.status(500).send({ error: "Global token not initialized" });
+    }
+
+    if (new Date() > tokenData.expiresAt) {
+      console.log("Access token expired. Refreshing...");
+      await refreshGlobalAccessToken();
+      tokenData = await GlobalToken.findOne();
+    }
+    return tokenData.accessToken;
   } catch (err) {
-    res.status(500).send({
-      error: "Failed to get recorings",
-      details: err.response?.data || err.message,
+    console.error(err);
+    return null;
+  }
+}
+
+const fetchRecording = async (meetingId) => {
+  const WEBEX_ACCESS_TOKEN = await ensureValidTokenforRecording();
+  try {
+    const response = await axios.get(`https://webexapis.com/v1/recordings`, {
+      headers: {
+        Authorization: `Bearer ${WEBEX_ACCESS_TOKEN}`,
+      },
+      params: {
+        meetingId,
+      },
     });
+
+    return response.data.items[0];
+  } catch (error) {
+    console.error(
+      `Error fetching recording for meetingId: ${meetingId}`,
+      error.message
+    );
+    return null;
   }
 };
 
-module.exports = { createMeeting, initializeToken, ensureValidToken, updateMeetStatus };
+const scheduleJobForRecording = (meetingId, caseId, meetingEndTime) => {
+  const meetingEnd = new Date(meetingEndTime);
+
+  const firstRetryTime = new Date(meetingEnd);
+  firstRetryTime.setDate(firstRetryTime.getDate() + 1);
+  firstRetryTime.setHours(0, 10, 0, 0);
+  let retryCount = 0;
+  const scheduleNextRetry = (retryTime) => {
+    console.log(
+      `Scheduling retry #${
+        retryCount + 1
+      } for meetingId: ${meetingId} at ${retryTime}`
+    );
+    const job = schedule.scheduleJob(
+      `${meetingId}_retry_${retryCount}`,
+      retryTime,
+      async () => {
+        console.log(
+          `Running retry #${retryCount + 1} for meetingId: ${meetingId}`
+        );
+        const recording = await fetchRecording(meetingId);
+
+        if (recording) {
+          let cases = await CASES.findById(caseId);
+          cases.recordings.push(recording);
+          await cases.save();
+          console.log(`Recording saved for meetingId: ${meetingId}`);
+          job.cancel();
+        } else {
+          retryCount++;
+          if (retryCount < MAX_RETRIES) {
+            const nextRetryTime = new Date(
+              retryTime.getTime() + 60 * 60 * 1000
+            );
+            scheduleNextRetry(nextRetryTime);
+          } else {
+            console.log(
+              `Recording not available for meetingId: ${meetingId} after ${MAX_RETRIES} retries. Giving up.`
+            );
+            job.cancel();
+          }
+        }
+      }
+    );
+  };
+  scheduleNextRetry(firstRetryTime);
+};
+
+module.exports = {
+  createMeeting,
+  initializeToken,
+  ensureValidToken,
+  updateMeetStatus,
+  createMeetingforBulk,
+};

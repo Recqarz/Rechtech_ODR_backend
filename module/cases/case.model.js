@@ -43,6 +43,18 @@ const caseSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    amount:{
+      type: String,
+      default:""
+    },
+    accountNumber:{
+      type: String,
+      default:""
+    },
+    cardNo:{
+      type: String,
+      default:""
+    },
     disputeType: {
       type: String,
       required: true,

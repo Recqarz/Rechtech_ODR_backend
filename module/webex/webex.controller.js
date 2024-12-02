@@ -117,9 +117,9 @@ const createMeeting = async (req, res) => {
       }
     );
     cases.meetings.push(response.data);
-    await cases.save();
+    const ncases = await cases.save();
     // senEmailwithLinkandTime(cases, response.data.webLink, startTime, endTime);
-    notificationForMeetingSchedule(cases, response.data.webLink, startTime, endTime)
+    notificationForMeetingSchedule(ncases, response.data.webLink, startTime, endTime)
     return res.status(201).send(response.data);
   } catch (err) {
     console.log(err);

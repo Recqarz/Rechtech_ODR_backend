@@ -35,7 +35,7 @@ const upload = multer({ storage });
 
 const storages = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/'); // Temporary upload directory
+    cb(null, "uploads/"); // Temporary upload directory
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
@@ -45,22 +45,25 @@ const storages = multer.diskStorage({
 
 const fileFilter = (req, file, cb) => {
   const allowedMimeTypes = [
-    'application/vnd.ms-excel', // .xls
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
-    'application/pdf', // .pdf
+    "application/vnd.ms-excel", // .xls
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // .xlsx
+    "application/pdf", // .pdf
   ];
 
   if (allowedMimeTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error('Invalid file type. Only Excel or PDF files are allowed.'), false);
+    cb(
+      new Error("Invalid file type. Only Excel or PDF files are allowed."),
+      false
+    );
   }
 };
 
-const uploads = multer({ storages, fileFilter });
+const uploads = multer({ storage: storages, fileFilter });
 
 // Fixed route configuration
-caseRoute.post("/addcase", upload.array("files"), addCase);
+caseRoute.post("/addcase", upload.array("file"), addCase);
 caseRoute.use("/bulkupload", bulkAddCasesRoute);
 caseRoute.put("/updatemeetstatus", updateMeetStatus);
 caseRoute.get("/auto-caseid", getAutoCaseId);
@@ -69,6 +72,6 @@ caseRoute.get("/arbitratorcases", arbitratorCases);
 caseRoute.get("/clientcases", clientCases);
 caseRoute.get("/casewithaccountnumber/:accountNumber", caseWithAccountNumber);
 caseRoute.get("/allrespondentcases", allRespondentCases);
-caseRoute.post("/uploadawards", uploads.single('file'), addAward);
+caseRoute.post("/uploadawards", uploads.single("file"), addAward);
 
 module.exports = { caseRoute };

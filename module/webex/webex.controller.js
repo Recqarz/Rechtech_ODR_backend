@@ -140,8 +140,9 @@ const scheduleJobForRecordingBulk = (meetingId, caseId, meetingEndTime) => {
   const meetingEnd = new Date(meetingEndTime);
 
   const firstRetryTime = new Date(meetingEnd);
-  firstRetryTime.setDate(firstRetryTime.getDate() + 1);
-  firstRetryTime.setHours(0, 10, 0, 0);
+  // firstRetryTime.setDate(firstRetryTime.getDate() + 1);
+  // firstRetryTime.setHours(0, 10, 0, 0);
+  firstRetryTime.setMinutes(meetingEnd.getMinutes() + 15);
   let retryCount = 0;
   const scheduleNextRetry = (retryTime) => {
     console.log(
@@ -187,7 +188,7 @@ const scheduleJobForRecordingBulk = (meetingId, caseId, meetingEndTime) => {
 };
 
 const createMeetingforBulk = async (req, res) => {
-  const { caseIdForMeeting: caseId, startTime, endTime, title } = req.body;
+  const { caseId, startTime, endTime, title } = req.body;
   try {
     const response = await axios.post(
       process.env.CREATE_MEETING_ENDPOINT,

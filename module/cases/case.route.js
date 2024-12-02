@@ -69,6 +69,6 @@ caseRoute.get("/arbitratorcases", arbitratorCases);
 caseRoute.get("/clientcases", clientCases);
 caseRoute.get("/casewithaccountnumber/:accountNumber", caseWithAccountNumber);
 caseRoute.get("/allrespondentcases", allRespondentCases);
-cashRoute.post("/uploadawards", uploads.single('file'), addAward);
+caseRoute.post("/uploadawards", uploads.single('file'), addAward);
 
 module.exports = { caseRoute };

@@ -5,6 +5,7 @@ const { CASES } = require("./case.model");
 const { USER } = require("../users/user.model");
 const jwt = require("jsonwebtoken");
 const { sendEmailsforCases } = require("../../services/sendemailforcases");
+// const { request } = require("http");
 
 const addCase = async (req, res) => {
   try {
@@ -54,7 +55,7 @@ const addCase = async (req, res) => {
     });
 
     await newCase.save();
-    const {respondentEmail, respondentName} = caseData;
+    const { respondentEmail, respondentName } = caseData;
     sendEmailsforCases(respondentName, respondentEmail);
     res.status(201).json({
       success: true,
@@ -163,10 +164,53 @@ const clientCases = async (req, res) => {
   }
 };
 
+const caseWithAccountNumber = async (req, res) => {
+  const { accountNumber } = req.params;
+  try {
+    const caseData = await CASES.findOne({ accountNumber: accountNumber });
+    if (!caseData) {
+      return res.status(404).json({ message: "Account number does not exits" });
+    }
+    res.status(200).json({ caseData });
+  } catch (err) {
+    console.error("Error getting case with account number:", err.message);
+    res.status(500).send("Internal Server Error: " + err.message);
+  }
+};
+
+const allRespondentCases = async (req, res) => {
+  const { token } = req.headers;
+  try {
+    if (!token) {
+      return res.status(401).json({ message: "Token not provided" });
+    }
+    const decoded = jwt.verify(
+      token?.split(" ")[1],
+      process.env.JWT_SECRET_KEY
+    );
+    if (!decoded) {
+      return res.status(401).json({ message: "Invalid token" });
+    }
+    const accountNumber = decoded.accountNumber;
+    const data = await CASES.find({ accountNumber: accountNumber }).sort({
+      _id: -1,
+    });
+    if (!data) {
+      return res.status(404).json({ message: "Case data not found" });
+    }
+    res.status(200).json({ data: data });
+  } catch (err) {
+    console.error("Error getting all respondent cases:", err.message);
+    return res.status(500).send("Internal Server Error: " + err.message);
+  }
+};
+
 module.exports = {
   addCase,
   getAutoCaseId,
   getAllCases,
   arbitratorCases,
   clientCases,
+  caseWithAccountNumber,
+  allRespondentCases,
 };

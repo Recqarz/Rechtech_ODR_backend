@@ -163,10 +163,9 @@ const sgMail = require("@sendgrid/mail");
 const notificationToarbitratorforcaseassign = async (cases) => {
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
   try {
-    // Create the email message
     const msg = {
-      to: cases.arbitratorEmail, // List of recipients
-      from: process.env.SENDGRID_SENDER_EMAIL, // Verified sender email
+      to: cases.arbitratorEmail,
+      from: process.env.SENDGRID_SENDER_EMAIL,
       subject: "Appointment as Arbitrator for Case(s)",
       html: `
           <h4>Dear ${cases.arbitratorName},</h4>
@@ -195,10 +194,9 @@ const notificationToarbitratorforcaseassign = async (cases) => {
 const notificationTorespondentforcaseassign = async (cases) => {
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
   try {
-    // Create the email message
     const msg = {
-      to: cases.respondentEmail, // List of recipients
-      from: process.env.SENDGRID_SENDER_EMAIL, // Verified sender email
+      to: cases.respondentEmail,
+      from: process.env.SENDGRID_SENDER_EMAIL, 
       subject: "Notification of Arbitrator Appointment for Your Case",
       html: `
           <h4>Dear ${cases.respondentName},</h4>
@@ -206,13 +204,12 @@ const notificationTorespondentforcaseassign = async (cases) => {
           <h4>Below are the details:</h4>
           <p><b>Arbitrator Name: </b>${cases.arbitratorName}</p>
           <p><b>Contact Information: </b>${cases.arbitratorEmail}</p>
-          <p><b>Client Name: SBI: </b>${cases.clientName}</p>
+          <p><b>Client Name: </b>${cases.clientName}</p>
           <h4>Best regards,</h4>
           <p>Team Sandhee</p>
           `,
     };
 
-    // Send the email
     await sgMail.send(msg);
     console.log("Email sent successfully.");
     return true;
@@ -229,10 +226,9 @@ const notificationTorespondentforcaseassign = async (cases) => {
 const notificationToclientforcaseassign = async (cases) => {
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
   try {
-    // Create the email message
     const msg = {
-      to: cases.clientEmail, // List of recipients
-      from: process.env.SENDGRID_SENDER_EMAIL, // Verified sender email
+      to: cases.clientEmail, 
+      from: process.env.SENDGRID_SENDER_EMAIL, 
       subject: "Notification of Arbitrator Appointment for Your Case",
       html: `
           <h4>Dear ${cases.respondentName},</h4>
@@ -246,7 +242,6 @@ const notificationToclientforcaseassign = async (cases) => {
           `,
     };
 
-    // Send the email
     await sgMail.send(msg);
     console.log("Email sent successfully.");
     return true;

@@ -5,6 +5,8 @@ const {
   getAllCases,
   arbitratorCases,
   clientCases,
+  caseWithAccountNumber,
+  allRespondentCases,
 } = require("./case.controller");
 const express = require("express");
 const caseRoute = express.Router();
@@ -38,5 +40,7 @@ caseRoute.get("/auto-caseid", getAutoCaseId);
 caseRoute.get("/all-cases", getAllCases);
 caseRoute.get("/arbitratorcases", arbitratorCases);
 caseRoute.get("/clientcases", clientCases);
+caseRoute.get("/casewithaccountnumber/:accountNumber", caseWithAccountNumber);
+caseRoute.get("/allrespondentcases", allRespondentCases);
 
 module.exports = { caseRoute };

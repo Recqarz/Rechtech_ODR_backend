@@ -1,6 +1,5 @@
 require("dotenv").config();
 const sgMail = require("@sendgrid/mail");
-// const nodemailer = require("nodemailer");
 const formatDateTime = (time) => {
   const date = new Date(time);
   const day = date.getDate();

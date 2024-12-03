@@ -5,7 +5,6 @@ const { CASES } = require("./case.model");
 const { USER } = require("../users/user.model");
 const jwt = require("jsonwebtoken");
 const { sendEmailsforCases } = require("../../services/sendemailforcases");
-// const { request } = require("http");
 
 const addCase = async (req, res) => {
   try {
@@ -238,6 +237,37 @@ const addAward = async (req, res) => {
   }
 };
 
+const uploadOrderSheet = async (req, res) => {
+  try {
+    const { caseId } = req.body;
+    if (!req.file) {
+      return res
+        .status(400)
+        .json({ error: "No file uploaded or invalid file type" });
+    }
+
+    const filePath = req.file.path;
+    const fileName = req.file.originalname;
+
+    // Upload file to S3
+    const s3Response = await uploadFileToS3(filePath, fileName);
+
+    // Delete the file from the local uploads directory
+    fs.unlink(filePath, (err) => {
+      if (err) console.error("Error deleting file:", err);
+    });
+
+    // Respond with the S3 URL
+    const cases = await CASES.findById(caseId);
+    cases.orderSheet.push(s3Response.Location);
+    await cases.save();
+    res.status(200).json({ message: "File uploaded successfully" });
+  } catch (error) {
+    console.error("Error during file upload:", error);
+    res.status(500).json({ error: "Failed to upload file" });
+  }
+};
+
 module.exports = {
   addCase,
   getAutoCaseId,
@@ -247,4 +277,5 @@ module.exports = {
   caseWithAccountNumber,
   allRespondentCases,
   addAward,
+  uploadOrderSheet,
 };

@@ -1,3 +1,4 @@
+require("dotenv").config();
 const bulkAddCasesRoute = require("express").Router();
 const multer = require("multer");
 const path = require("path");
@@ -6,12 +7,11 @@ const xlsx = require("xlsx");
 const { CASES } = require("./case.model");
 const { sendEmailsforCases } = require("../../services/sendemailforcases");
 
-// Configure multer disk storage
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadPath = path.join(__dirname, "../uploads");
     if (!fs.existsSync(uploadPath)) {
-      fs.mkdirSync(uploadPath); // Create folder if it doesn't exist
+      fs.mkdirSync(uploadPath);
     }
     cb(null, uploadPath);
   },
@@ -46,34 +46,33 @@ bulkAddCasesRoute.post("/", upload.single("excelFile"), async (req, res) => {
       !clientMobile ||
       !disputeType
     ) {
-      fs.unlinkSync(req.file.path); // Delete the file
+      fs.unlinkSync(req.file.path);
       return res.status(400).json({ message: "Client details are required" });
     }
 
-    // Read the Excel file
     const workbook = xlsx.readFile(req.file.path);
     const sheetName = workbook.SheetNames[0];
     const sheet = workbook.Sheets[sheetName];
     const respondentData = xlsx.utils.sheet_to_json(sheet);
 
     if (respondentData.length === 0) {
-      fs.unlinkSync(req.file.path); // Delete the file
+      fs.unlinkSync(req.file.path);
       return res.status(400).json({ message: "Excel file is empty" });
     }
-
-    // Get the current count of cases in the database
     const currentCaseCount = await CASES.countDocuments();
 
     const bulkInsertData = respondentData.map((ele, index) => {
-      const caseNumber = currentCaseCount + index + 1; // Dynamic case count
-      let caseId = `CS${caseNumber.toString().padStart(2, "0")}`; // Generate a case ID
-      sendEmailsforCases(ele.respondentName, ele.respondentEmail);
-      const attachments = ele.attachments.includes(",")
-        ? ele.attachments.split(",").map((url, idx) => {
-            const name = `file${idx + 1}`; // file1, file2, etc.
-            return { name, url }; // Return the object with the unique name and url
-          })
-        : [{ name: "file1", url: ele.attachments }];
+      const caseNumber = currentCaseCount + index + 1;
+      let caseId = `CS${caseNumber.toString().padStart(2, "0")}`;
+      sendEmailsforCases(ele.Respondent, ele.EmailId);
+      const attachments = ele.attachments
+        ? ele.attachments.includes(",")
+          ? ele.attachments.split(",").map((url, idx) => {
+              const name = `file${idx + 1}`;
+              return { name, url };
+            })
+          : [{ name: "file1", url: ele.attachments }]
+        : [];
       return {
         caseId,
         clientName,
@@ -81,18 +80,19 @@ bulkAddCasesRoute.post("/", upload.single("excelFile"), async (req, res) => {
         clientEmail,
         clientAddress,
         clientMobile,
-        respondentName: ele.respondentName,
-        respondentEmail: ele.respondentEmail,
-        respondentMobile: ele.respondentMobile,
+        respondentName: ele.Respondent,
+        respondentEmail: ele.EmailId,
+        respondentMobile: String(ele.RespondentMobile),
+        amount: ele.Amount ? String(ele.Amount) : "",
+        accountNumber: ele.AccountNumber ? String(ele.AccountNumber) : "",
+        cardNo: ele.CardNo ? String(ele.CardNo) : "",
         disputeType: disputeType,
-        respondentAddress: ele.respondentAddress,
-        attachments, // Split attachments into an array
+        respondentAddress: ele.Address,
+        attachments,
         isFileUpload: true,
         fileName: req.file.originalname,
       };
     });
-
-    // const bulkInsertDatas = bulkInsertData.map(item => item.respondentEmail);
 
     // Insert all data into MongoDB
     await CASES.insertMany(bulkInsertData);

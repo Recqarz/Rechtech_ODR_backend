@@ -1,6 +1,5 @@
 const { USER } = require("../module/users/user.model");
 
-
 const allArbitrators = async (req, res) => {
   try {
     let arbitrator = await USER.find({ role: "arbitrator" }).sort({ _id: -1 });

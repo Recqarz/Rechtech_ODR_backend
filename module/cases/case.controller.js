@@ -1,3 +1,4 @@
+require("dotenv").config();
 const path = require("path");
 const fs = require("fs");
 const { uploadFileToS3 } = require("../../utils/fileUtils");
@@ -54,7 +55,7 @@ const addCase = async (req, res) => {
     });
 
     await newCase.save();
-    const {respondentEmail, respondentName} = caseData;
+    const { respondentEmail, respondentName } = caseData;
     sendEmailsforCases(respondentName, respondentEmail);
     res.status(201).json({
       success: true,
@@ -163,10 +164,119 @@ const clientCases = async (req, res) => {
   }
 };
 
+const caseWithAccountNumber = async (req, res) => {
+  const { accountNumber } = req.params;
+  try {
+    const caseData = await CASES.findOne({ accountNumber: accountNumber });
+    if (!caseData) {
+      return res.status(404).json({ message: "Account number does not exits" });
+    }
+    res.status(200).json({ caseData });
+  } catch (err) {
+    console.error("Error getting case with account number:", err.message);
+    res.status(500).send("Internal Server Error: " + err.message);
+  }
+};
+
+const allRespondentCases = async (req, res) => {
+  const { token } = req.headers;
+  try {
+    if (!token) {
+      return res.status(401).json({ message: "Token not provided" });
+    }
+    const decoded = jwt.verify(
+      token?.split(" ")[1],
+      process.env.JWT_SECRET_KEY
+    );
+    if (!decoded) {
+      return res.status(401).json({ message: "Invalid token" });
+    }
+    const accountNumber = decoded.accountNumber;
+    const data = await CASES.find({ accountNumber: accountNumber }).sort({
+      _id: -1,
+    });
+    if (!data) {
+      return res.status(404).json({ message: "Case data not found" });
+    }
+    res.status(200).json({ data: data });
+  } catch (err) {
+    console.error("Error getting all respondent cases:", err.message);
+    return res.status(500).send("Internal Server Error: " + err.message);
+  }
+};
+
+const addAward = async (req, res) => {
+  try {
+    const { caseId } = req.body;
+    if (!req.file) {
+      return res
+        .status(400)
+        .json({ error: "No file uploaded or invalid file type" });
+    }
+
+    const filePath = req.file.path;
+    const fileName = req.file.originalname;
+
+    // Upload file to S3
+    const s3Response = await uploadFileToS3(filePath, fileName);
+
+    // Delete the file from the local uploads directory
+    fs.unlink(filePath, (err) => {
+      if (err) console.error("Error deleting file:", err);
+    });
+
+    // Respond with the S3 URL
+    const cases = await CASES.findById(caseId);
+    cases.isAwardCompleted = true;
+    cases.isCaseResolved = true;
+    cases.awards.push(s3Response.Location);
+    await cases.save();
+    res.status(200).json({ message: "File uploaded successfully" });
+  } catch (error) {
+    console.error("Error during file upload:", error);
+    res.status(500).json({ error: "Failed to upload file" });
+  }
+};
+
+const uploadOrderSheet = async (req, res) => {
+  try {
+    const { caseId } = req.body;
+    if (!req.file) {
+      return res
+        .status(400)
+        .json({ error: "No file uploaded or invalid file type" });
+    }
+
+    const filePath = req.file.path;
+    const fileName = req.file.originalname;
+
+    // Upload file to S3
+    const s3Response = await uploadFileToS3(filePath, fileName);
+
+    // Delete the file from the local uploads directory
+    fs.unlink(filePath, (err) => {
+      if (err) console.error("Error deleting file:", err);
+    });
+
+    // Respond with the S3 URL
+    const cases = await CASES.findById(caseId);
+    cases.orderSheet.push(s3Response.Location);
+    await cases.save();
+    res.status(200).json({ message: "File uploaded successfully" });
+  } catch (error) {
+    console.error("Error during file upload:", error);
+    res.status(500).json({ error: "Failed to upload file" });
+  }
+};
+
 module.exports = {
   addCase,
   getAutoCaseId,
   getAllCases,
   arbitratorCases,
   clientCases,
+  caseWithAccountNumber,
+  allRespondentCases,
+  addAward,
+  uploadOrderSheet,
 };

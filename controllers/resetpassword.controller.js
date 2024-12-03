@@ -1,7 +1,7 @@
 require("dotenv").config();
 const argon2 = require("argon2");
 const { PASSWORDRESET } = require("../model/resetPassword.model");
-const nodemailer = require("nodemailer");
+// const nodemailer = require("nodemailer");
 const sgMail = require("@sendgrid/mail");
 const { USER } = require("../module/users/user.model");
 

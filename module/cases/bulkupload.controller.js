@@ -1,3 +1,4 @@
+require("dotenv").config();
 const bulkAddCasesRoute = require("express").Router();
 const multer = require("multer");
 const path = require("path");

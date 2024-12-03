@@ -1,8 +1,12 @@
+require("dotenv").config();
 const argon2 = require("argon2");
 const jwt = require("jsonwebtoken");
 const { USER } = require("./user.model");
 const { RESPONDENT } = require("./respondent.model");
-const { sendOtpToNumber } = require("../../services/sendOtpToNumber");
+const {
+  sendOtpToNumber,
+  sendSmsToRecipient,
+} = require("../../services/sendOtpToNumber");
 
 const handleAuthSignup = async (req, res) => {
   let { password } = req.body;
@@ -75,7 +79,8 @@ const respondentOTP = async (req, res) => {
     const deleteMany = await RESPONDENT.deleteMany({
       accountNumber: accountNumber,
     });
-    sendOtpToNumber(otp, `91${respondentMobile}`);
+    const text = `Your OTP for Sandhee Platform is ${otp}. It is valid for 5 minutes. Please do not share it with anyone. Team SANDHEE (RecQARZ)`;
+    sendSmsToRecipient(respondentMobile, text);
     const nlogin = await RESPONDENT.create({
       accountNumber,
       respondentMobile,
@@ -107,8 +112,11 @@ const respondentLogin = async (req, res) => {
     }
     const key = process.env.JWT_SECRET_KEY;
     const authToken = jwt.sign({ accountNumber: login.accountNumber }, key);
-    return res.json({ token: `bearer ${authToken}`, role: "respondent" });
+    return res
+      .status(200)
+      .json({ token: `bearer ${authToken}`, role: "respondent" });
   } catch (err) {
+    console.log(err);
     return res.status(500).json({ message: "Internel error" });
   }
 };

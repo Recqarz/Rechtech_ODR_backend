@@ -1,7 +1,7 @@
+require("dotenv").config();
 const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
 const fs = require("fs");
 const path = require("path");
-require("dotenv").config();
 
 // AWS S3 Configuration
 const s3Client = new S3Client({

@@ -6,6 +6,11 @@ const {
   notificationForMeetingSchedule,
 } = require("../../services/senEmailwithLinkandTime");
 const schedule = require("node-schedule");
+const {
+  sendEmailtoArbitratorWithRecording,
+  sendEmailtoClientWithRecording,
+  sendEmailtoRespondentWithRecording,
+} = require("../../services/sendEmailWithRecording");
 const MAX_RETRIES = 4;
 
 async function refreshGlobalAccessToken() {
@@ -140,9 +145,8 @@ const scheduleJobForRecordingBulk = (meetingId, caseId, meetingEndTime) => {
   const meetingEnd = new Date(meetingEndTime);
 
   const firstRetryTime = new Date(meetingEnd);
-  // firstRetryTime.setDate(firstRetryTime.getDate() + 1);
-  // firstRetryTime.setHours(0, 10, 0, 0);
-  firstRetryTime.setMinutes(meetingEnd.getMinutes() + 15);
+  firstRetryTime.setDate(firstRetryTime.getDate() + 1);
+  firstRetryTime.setHours(0, 10, 0, 0);
   let retryCount = 0;
   const scheduleNextRetry = (retryTime) => {
     console.log(
@@ -160,12 +164,13 @@ const scheduleJobForRecordingBulk = (meetingId, caseId, meetingEndTime) => {
         const recording = await fetchRecording(meetingId);
 
         if (recording) {
-          // I have array of caseId so i can add the recording in each case
           for (let i = 0; i < caseId.length; i++) {
             const cases = await CASES.findById(caseId[i]);
             cases.recordings.push(recording);
             await cases.save();
           }
+          const cases = await CASES.findById(caseId[0]);
+          sendEmailtoArbitratorWithRecording(cases, recording);
           job.cancel();
         } else {
           retryCount++;
@@ -322,6 +327,9 @@ const scheduleJobForRecording = (meetingId, caseId, meetingEndTime) => {
           let cases = await CASES.findById(caseId);
           cases.recordings.push(recording);
           await cases.save();
+          sendEmailtoArbitratorWithRecording(cases, recording);
+          sendEmailtoClientWithRecording(cases, recording);
+          sendEmailtoRespondentWithRecording(cases, recording);
           console.log(`Recording saved for meetingId: ${meetingId}`);
           job.cancel();
         } else {

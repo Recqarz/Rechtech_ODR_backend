@@ -8,6 +8,7 @@ const {
   caseWithAccountNumber,
   allRespondentCases,
   addAward,
+  uploadOrderSheet,
 } = require("./case.controller");
 const express = require("express");
 const caseRoute = express.Router();
@@ -45,18 +46,13 @@ const upload = multer({ storage });
 // File filter to restrict allowed file types
 const fileFilter = (req, file, cb) => {
   const allowedMimeTypes = [
-    "application/vnd.ms-excel", // .xls
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // .xlsx
     "application/pdf", // .pdf
   ];
 
   if (allowedMimeTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(
-      new Error("Invalid file type. Only Excel or PDF files are allowed."),
-      false
-    );
+    cb(new Error("Invalid file type. Only PDF files are allowed."), false);
   }
 };
 
@@ -82,14 +78,25 @@ caseRoute.get("/auto-caseid", asyncHandler(getAutoCaseId));
 caseRoute.get("/all-cases", asyncHandler(getAllCases));
 caseRoute.get("/arbitratorcases", asyncHandler(arbitratorCases));
 caseRoute.get("/clientcases", asyncHandler(clientCases));
-caseRoute.get("/casewithaccountnumber/:accountNumber", asyncHandler(caseWithAccountNumber));
+caseRoute.get(
+  "/casewithaccountnumber/:accountNumber",
+  asyncHandler(caseWithAccountNumber)
+);
 caseRoute.get("/allrespondentcases", asyncHandler(allRespondentCases));
 caseRoute.post("/uploadawards", uploads.single("file"), asyncHandler(addAward));
+caseRoute.post(
+  "/uploadordersheet",
+  uploads.single("file"),
+  asyncHandler(uploadOrderSheet)
+);
 
 // Global error handling middleware
 caseRoute.use((err, req, res, next) => {
   console.error("Error:", err); // Log the error
-  if (err instanceof multer.MulterError || err.message.includes("Invalid file type")) {
+  if (
+    err instanceof multer.MulterError ||
+    err.message.includes("Invalid file type")
+  ) {
     return res.status(400).json({ error: err.message });
   }
   next(err);

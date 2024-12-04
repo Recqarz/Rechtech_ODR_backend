@@ -93,11 +93,7 @@ bulkAddCasesRoute.post("/", upload.single("excelFile"), async (req, res) => {
         fileName: req.file.originalname,
       };
     });
-
-    // Insert all data into MongoDB
     await CASES.insertMany(bulkInsertData);
-
-    // // Clean up the file after processing
     fs.unlinkSync(req.file.path);
 
     res.status(200).json({

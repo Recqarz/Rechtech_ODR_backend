@@ -1,4 +1,5 @@
 const { caseRoute } = require("../module/cases/case.route");
+const { globalCount } = require("../module/global/count/count.route");
 const { userRoute } = require("../module/users/user.route");
 const webexRouter = require("../module/webex/webex.route");
 const { arbitratorRoute } = require("../routes/arbitrator.route");
@@ -19,5 +20,6 @@ allRoutes.use("/cases", caseRoute);
 allRoutes.use("/experties", expertRoute);
 allRoutes.use("/arbitratorappointandnotifyall", appointAllRoute);
 allRoutes.use("/webex", webexRouter);
+allRoutes.use("/global", globalCount);
 
 module.exports = { allRoutes };

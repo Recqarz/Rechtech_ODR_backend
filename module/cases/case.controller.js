@@ -13,7 +13,6 @@ const addCase = async (req, res) => {
     const fileNames = req.body.fileNames;
     const attachments = [];
 
-    // Process files if they exist
     if (req.files && req.files.length > 0) {
       for (let i = 0; i < req.files.length; i++) {
         const file = req.files[i];
@@ -21,20 +20,15 @@ const addCase = async (req, res) => {
         const filePath = path.join(__dirname, "../../uploads", file.filename);
 
         try {
-          // Upload the file to S3
           const s3Response = await uploadFileToS3(filePath, file.originalname);
-
-          // Save file metadata
           attachments.push({
             name: fileName || file.originalname,
             url: s3Response.Location,
           });
 
-          // Delete the local file after upload
           fs.unlinkSync(filePath);
         } catch (uploadError) {
           console.error("Error uploading file to S3:", uploadError);
-          // Continue with the next file if one fails
         }
       }
     }
@@ -48,7 +42,6 @@ const addCase = async (req, res) => {
     client.caseAdded = noOfcase;
     await client.save();
 
-    // Create new case with the parsed data
     const newCase = new CASES({
       ...caseData,
       attachments,
@@ -65,7 +58,6 @@ const addCase = async (req, res) => {
   } catch (err) {
     console.error("Error saving case:", err);
 
-    // Cleanup: Delete temporary files if they exist
     if (req.files) {
       req.files.forEach((file) => {
         const filePath = path.join(__dirname, "../../uploads", file.filename);
@@ -154,7 +146,7 @@ const clientCases = async (req, res) => {
     if (!user) {
       return res.status(402).json({ message: "Invalid user id" });
     }
-    const caseData = await CASES.find({ clientId: user.uid }).sort({ _id: -1 });
+    const caseData = await CASES.find({ clientId: user._id }).sort({ _id: -1 });
     if (!caseData) {
       return res.status(404).json({ message: "Case data not found" });
     }
@@ -217,15 +209,12 @@ const addAward = async (req, res) => {
     const filePath = req.file.path;
     const fileName = req.file.originalname;
 
-    // Upload file to S3
     const s3Response = await uploadFileToS3(filePath, fileName);
 
-    // Delete the file from the local uploads directory
     fs.unlink(filePath, (err) => {
       if (err) console.error("Error deleting file:", err);
     });
 
-    // Respond with the S3 URL
     const cases = await CASES.findById(caseId);
     cases.isAwardCompleted = true;
     cases.isCaseResolved = true;
@@ -249,16 +238,10 @@ const uploadOrderSheet = async (req, res) => {
 
     const filePath = req.file.path;
     const fileName = req.file.originalname;
-
-    // Upload file to S3
     const s3Response = await uploadFileToS3(filePath, fileName);
-
-    // Delete the file from the local uploads directory
     fs.unlink(filePath, (err) => {
       if (err) console.error("Error deleting file:", err);
     });
-
-    // Respond with the S3 URL
     const cases = await CASES.findById(caseId);
     cases.orderSheet.push(s3Response.Location);
     await cases.save();

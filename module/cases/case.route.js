@@ -1,4 +1,3 @@
-// route.js
 const {
   addCase,
   getAutoCaseId,
@@ -18,16 +17,14 @@ const fs = require("fs");
 const { updateMeetStatus } = require("../webex/webex.controller");
 const { bulkAddCasesRoute } = require("./bulkupload.controller");
 
-// Middleware to handle async route handlers with error catching
 const asyncHandler = (fn) => (req, res, next) => {
   Promise.resolve(fn(req, res, next)).catch(next);
 };
 
-// Configure multer storage for basic uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, "../../uploads"); // Fix path to resolve directory
-    console.log("Upload directory:", uploadDir); // Debug log for path
+    const uploadDir = path.join(__dirname, "../../uploads");
+    console.log("Upload directory:", uploadDir);
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
@@ -35,19 +32,15 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = `${Date.now()}_${file.originalname}`;
-    console.log("File upload:", uniqueSuffix); // Debug log for filename
+    console.log("File upload:", uniqueSuffix);
     cb(null, uniqueSuffix);
   },
 });
 
-// Configure multer for file upload
 const upload = multer({ storage });
 
-// File filter to restrict allowed file types
 const fileFilter = (req, file, cb) => {
-  const allowedMimeTypes = [
-    "application/pdf", // .pdf
-  ];
+  const allowedMimeTypes = ["application/pdf"];
 
   if (allowedMimeTypes.includes(file.mimetype)) {
     cb(null, true);
@@ -56,10 +49,9 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-// Additional multer configuration for bulk upload
 const storages = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/"); // Temporary upload directory
+    cb(null, "uploads/");
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
@@ -67,10 +59,8 @@ const storages = multer.diskStorage({
   },
 });
 
-// Configure bulk upload with file filter
 const uploads = multer({ storage: storages, fileFilter });
 
-// Fixed route configuration
 caseRoute.post("/addcase", upload.array("files"), asyncHandler(addCase));
 caseRoute.use("/bulkupload", bulkAddCasesRoute);
 caseRoute.put("/updatemeetstatus", asyncHandler(updateMeetStatus));
@@ -90,9 +80,8 @@ caseRoute.post(
   asyncHandler(uploadOrderSheet)
 );
 
-// Global error handling middleware
 caseRoute.use((err, req, res, next) => {
-  console.error("Error:", err); // Log the error
+  console.error("Error:", err);
   if (
     err instanceof multer.MulterError ||
     err.message.includes("Invalid file type")

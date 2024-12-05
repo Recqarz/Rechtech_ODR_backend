@@ -2,22 +2,43 @@ const { CASES } = require("../cases/case.model");
 
 const recentMeeting = async (req, res) => {
   try {
+    const today = new Date();
+    const kolkataOffset = 5.5 * 60 * 60 * 1000;
+    const startOfDay = new Date(today.getTime() + kolkataOffset);
+    startOfDay.setUTCHours(0, 0, 0, 0);
+    const endOfDay = new Date(today.getTime() + kolkataOffset);
+    endOfDay.setUTCHours(23, 59, 59, 999);
     const results = await CASES.aggregate([
       {
         $unwind: "$meetings",
       },
       {
+        $addFields: {
+          meetingDate: {
+            $dateFromString: {
+              dateString: "$meetings.start",
+            },
+          },
+        },
+      },
+      {
+        $match: {
+          meetingDate: {
+            $gte: startOfDay,
+            $lt: endOfDay,
+          },
+        },
+      },
+      {
         $project: {
           _id: 0,
           id: "$caseId",
+          meet: "$meetings.id",
           time: {
             $dateToString: {
               format: "%H:%M",
-              date: {
-                $dateFromString: {
-                  dateString: "$meetings.start",
-                },
-              },
+              date: "$meetingDate",
+              timezone: "Asia/Kolkata",
             },
           },
           title: { $concat: ["Meeting ", "$caseId"] },
@@ -31,13 +52,12 @@ const recentMeeting = async (req, res) => {
         $limit: 5,
       },
     ]);
+
     const formattedResults = results.map((meeting) => {
-      const timeParts = meeting.time.split(":");
-      let hours = parseInt(timeParts[0]);
-      const minutes = timeParts[1];
+      const [hoursString, minutes] = meeting.time.split(":");
+      let hours = parseInt(hoursString, 10);
       const ampm = hours >= 12 ? "PM" : "AM";
-      hours = hours % 12;
-      hours = hours ? hours : 12;
+      hours = hours % 12 || 12;
       const formattedTime = `${hours}:${minutes} ${ampm}`;
       return {
         id: meeting.id,
@@ -46,12 +66,13 @@ const recentMeeting = async (req, res) => {
         link: meeting.link,
       };
     });
+
     return res.status(200).json({ data: formattedResults });
   } catch (error) {
     console.error("Error fetching formatted meeting data:", error);
-    return res
-      .status(500)
-      .json({ message: "Error fetching formatted meeting data" });
+    return res.status(500).json({
+      message: "Error fetching formatted meeting data",
+    });
   }
 };
 
@@ -97,11 +118,7 @@ const fullMeetingDataWithCaseDetails = async (req, res) => {
           updatedAt: 1,
           meetingId: "$meetings.id",
           webLink: "$meetings.webLink",
-          startTime: {
-            $dateFromString: {
-              dateString: "$meetings.start",
-            },
-          },
+          startTime: "$meetings.start",
         },
       },
       {

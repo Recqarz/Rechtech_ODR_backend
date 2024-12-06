@@ -3,10 +3,7 @@ const argon2 = require("argon2");
 const jwt = require("jsonwebtoken");
 const { USER } = require("./user.model");
 const { RESPONDENT } = require("./respondent.model");
-const {
-  sendOtpToNumber,
-  sendSmsToRecipient,
-} = require("../../services/sendOtpToNumber");
+const { sendSmsToRecipient } = require("../../services/sendOtpToNumber");
 
 const handleAuthSignup = async (req, res) => {
   let { password } = req.body;
@@ -65,7 +62,7 @@ const handleAuthLogin = async (req, res) => {
       return res.status(401).json({ message: "User is inactive" });
     }
     const key = process.env.JWT_SECRET_KEY;
-    const authToken = jwt.sign({ id: user._id }, key);
+    const authToken = jwt.sign({ id: user._id }, key, { expiresIn: "1d" });
     return res.json({ token: `bearer ${authToken}`, role: user.role });
   } catch (err) {
     return res.status(500).json({ message: "Internel error" });
@@ -111,7 +108,9 @@ const respondentLogin = async (req, res) => {
       return res.status(401).json({ message: "Login otp expired" });
     }
     const key = process.env.JWT_SECRET_KEY;
-    const authToken = jwt.sign({ accountNumber: login.accountNumber }, key);
+    const authToken = jwt.sign({ accountNumber: login.accountNumber }, key, {
+      expiresIn: "1d",
+    });
     return res
       .status(200)
       .json({ token: `bearer ${authToken}`, role: "respondent" });
@@ -121,9 +120,32 @@ const respondentLogin = async (req, res) => {
   }
 };
 
+const validateToken = (req, res) => {
+  const { token } = req.headers;
+  if (!token) {
+    return res.status(401).json({ message: "Token not provided" });
+  }
+  const tokens = token.split(" ")[1];
+  if (!tokens) {
+    return res.status(401).json({ message: "Token not provided" });
+  }
+  try {
+    const key = process.env.JWT_SECRET_KEY;
+    const decoded = jwt.verify(tokens, key);
+    if (!decoded) {
+      return res.status(403).json({ message: "Token is not valid" });
+    }
+    return res.json({ message: "Token is valid" });
+  } catch (err) {
+    console.error(err);
+    return res.status(403).json({ message: "Token is not valid" });
+  }
+};
+
 module.exports = {
   handleAuthSignup,
   handleAuthLogin,
   respondentOTP,
   respondentLogin,
+  validateToken,
 };

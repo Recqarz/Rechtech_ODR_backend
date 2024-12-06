@@ -143,7 +143,6 @@ const createMeeting = async (req, res) => {
 
 const scheduleJobForRecordingBulk = (meetingId, caseId, meetingEndTime) => {
   const meetingEnd = new Date(meetingEndTime);
-
   const firstRetryTime = new Date(meetingEnd);
   firstRetryTime.setDate(firstRetryTime.getDate() + 1);
   firstRetryTime.setHours(0, 10, 0, 0);
@@ -303,7 +302,6 @@ const fetchRecording = async (meetingId) => {
 
 const scheduleJobForRecording = (meetingId, caseId, meetingEndTime) => {
   const meetingEnd = new Date(meetingEndTime);
-
   const firstRetryTime = new Date(meetingEnd);
   firstRetryTime.setDate(firstRetryTime.getDate() + 1);
   firstRetryTime.setHours(0, 10, 0, 0);

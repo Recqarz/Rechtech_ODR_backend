@@ -1,51 +1,53 @@
 require("dotenv").config();
 const argon2 = require("argon2");
 const { PASSWORDRESET } = require("../model/resetPassword.model");
-const sgMail = require("@sendgrid/mail");
 const { USER } = require("../module/users/user.model");
+const { default: axios } = require("axios");
 
 const userExists = async (req, res) => {
   const { emailId } = req.body;
   try {
-    let user = await USER.findOne({ emailId: emailId });
+    let user = await USER.findOne({ emailId });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
+
     const otp = (Math.floor(Math.random() * 9000) + 1000).toString();
-    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-    const msg = {
-      to: [emailId],
-      from: process.env.SENDGRID_SENDER_EMAIL,
-      subject: "Your Password Reset OTP",
-      html: `
+    const html = `
       <h4>Hi ${user.name},</h4>
       <p>Your OTP to reset your password is: <b>${otp}</b></p>
       <p>Please enter this code to proceed with resetting your password.</p>
       <h4>Best regards,</h4>
       <p>Team Sandhee</p>
-      `,
-    };
-    try {
-      await sgMail.send(msg);
-    } catch (emailError) {
-      console.error("Error sending email:", emailError);
-      if (emailError.response) {
-        console.error("Error response body:", emailError.response.body);
-      }
-      return res.status(500).json({ message: "Failed to send OTP email" });
-    }
-    await PASSWORDRESET.deleteMany({ emailId: emailId });
-    const userPassword = await PASSWORDRESET.create({ emailId: emailId, otp });
+    `;
 
-    if (!userPassword) {
-      return res
-        .status(500)
-        .json({ message: "Internal error while saving OTP" });
-    }
+    const emailData = {
+      sender: {
+        name: process.env.BREVO_SENDER_NAME,
+        email: process.env.BREVO_SENDER_EMAIL,
+      },
+      to: [{ email: emailId, name: "User" }],
+      subject: "Your Password Reset OTP",
+      htmlContent: html,
+    };
+
+    await axios.post("https://api.brevo.com/v3/smtp/email", emailData, {
+      headers: {
+        accept: "application/json",
+        "api-key": process.env.BREVO_SENDER_API_KEY,
+        "content-type": "application/json",
+      },
+    });
+
+    await PASSWORDRESET.deleteMany({ emailId });
+    await PASSWORDRESET.create({ emailId, otp });
+
     return res.status(200).json({ message: "OTP email sent successfully" });
   } catch (err) {
     console.error("Error in userExists function:", err);
-    return res.status(500).json({ message: "Internal Server Error" });
+    return res
+      .status(500)
+      .json({ message: err.message || "Internal Server Error" });
   }
 };
 

@@ -4,7 +4,6 @@ const jwt = require("jsonwebtoken");
 const { USER } = require("./user.model");
 const { RESPONDENT } = require("./respondent.model");
 const {
-  sendOtpToNumber,
   sendSmsToRecipient,
 } = require("../../services/sendOtpToNumber");
 

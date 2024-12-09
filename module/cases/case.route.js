@@ -17,6 +17,7 @@ const fs = require("fs");
 const { updateMeetStatus } = require("../webex/webex.controller");
 const { bulkAddCasesRoute } = require("./bulkupload.controller");
 const { chartData } = require("./chartdata.controller");
+const { calendarRoute } = require("./case.calendar.route");
 
 const asyncHandler = (fn) => (req, res, next) => {
   Promise.resolve(fn(req, res, next)).catch(next);
@@ -64,6 +65,7 @@ const uploads = multer({ storage: storages, fileFilter });
 
 caseRoute.post("/addcase", upload.array("files"), asyncHandler(addCase));
 caseRoute.use("/bulkupload", bulkAddCasesRoute);
+caseRoute.use("/calendar", calendarRoute);
 caseRoute.put("/updatemeetstatus", asyncHandler(updateMeetStatus));
 caseRoute.get("/auto-caseid", asyncHandler(getAutoCaseId));
 caseRoute.get("/all-cases", asyncHandler(getAllCases));

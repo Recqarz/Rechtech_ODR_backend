@@ -1,4 +1,4 @@
-const { recentMeeting, fullMeetingDataWithCaseDetails } = require("./recentwebex.controller");
+const { recentMeeting, fullMeetingDataWithCaseDetails, allMeetigs } = require("./recentwebex.controller");
 const {
   initializeToken,
   createMeeting,
@@ -15,6 +15,8 @@ webexRouter.post("/create-meeting", ensureValidToken, createMeeting);
 webexRouter.get("/recent-meetings", recentMeeting);
 
 webexRouter.get("/recent-fullMeetingDataWithCaseDetails", fullMeetingDataWithCaseDetails);
+
+webexRouter.get("/all-meetings", allMeetigs);
 
 webexRouter.post(
   "/create-meeting-bulk",

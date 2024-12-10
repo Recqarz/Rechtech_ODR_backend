@@ -138,4 +138,40 @@ const fullMeetingDataWithCaseDetails = async (req, res) => {
   }
 };
 
-module.exports = { recentMeeting, fullMeetingDataWithCaseDetails };
+
+const allMeetigs = async (req, res) => {
+  try {
+    const cases = await CASES.aggregate([
+      {
+        $project: {
+          caseId: 1,
+          arbitratorName: 1,
+          clientName: 1,
+          respondentName: 1,
+          disputeType: 1,
+          meetings: {
+            $map: {
+              input: "$meetings",
+              as: "meeting",
+              in: {
+                webLink: "$$meeting.webLink",
+                start: "$$meeting.start",
+                end: "$$meeting.end",
+              },
+            },
+          },
+        },
+      },
+      { $unwind: "$meetings" },
+      { $sort: { "meetings.start": 1 } },
+    ]);
+    return res.status(200).json({ data: cases });
+  } catch (error) {
+    console.error("Error fetching all meetings:", error);
+    return res.status(500).json({
+      message: "Error fetching all meetings",
+    });
+  }
+};
+
+module.exports = { recentMeeting, fullMeetingDataWithCaseDetails, allMeetigs };

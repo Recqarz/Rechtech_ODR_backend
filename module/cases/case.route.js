@@ -16,7 +16,7 @@ const path = require("path");
 const fs = require("fs");
 const { updateMeetStatus } = require("../webex/webex.controller");
 const { bulkAddCasesRoute } = require("./bulkupload.controller");
-const { chartData } = require("./chartdata.controller");
+const { chartData, chartDataArbitrator } = require("./chartdata.controller");
 const { calendarRoute } = require("./case.calendar.route");
 
 const asyncHandler = (fn) => (req, res, next) => {
@@ -77,6 +77,7 @@ caseRoute.get(
 );
 caseRoute.get("/allrespondentcases", asyncHandler(allRespondentCases));
 caseRoute.get("/chartdata", chartData);
+caseRoute.get("/chartdata/arbitrator", chartDataArbitrator);
 caseRoute.post("/uploadawards", uploads.single("file"), asyncHandler(addAward));
 caseRoute.post(
   "/uploadordersheet",

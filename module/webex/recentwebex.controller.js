@@ -2,6 +2,7 @@ const { CASES } = require("../cases/case.model");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
+
 const recentMeeting = async (req, res) => {
   try {
     const today = new Date();
@@ -77,6 +78,7 @@ const recentMeeting = async (req, res) => {
     });
   }
 };
+
 
 const recentMeetingArbitrator = async (req, res) => {
   const { token } = req.headers;
@@ -164,6 +166,13 @@ const recentMeetingArbitrator = async (req, res) => {
   }
 };
 
+
+
+
+
+
+
+// Recent meeting for admin in the dashboard
 const fullMeetingDataWithCaseDetails = async (req, res) => {
   try {
     const results = await CASES.aggregate([
@@ -226,6 +235,7 @@ const fullMeetingDataWithCaseDetails = async (req, res) => {
   }
 };
 
+// Recent meeting for arbitrator in the dashboard
 const fullMeetingDataWithCaseDetailsArbitrator = async (req, res) => {
   const { token } = req.headers;
   if (!token) {
@@ -301,6 +311,95 @@ const fullMeetingDataWithCaseDetailsArbitrator = async (req, res) => {
   }
 };
 
+
+
+
+// Recent meeting for client in the dashboard
+const fullMeetingDataWithCaseDetailsClient = async (req, res) => {
+  const { token } = req.headers;
+  if (!token) {
+    return res.status(401).json({ message: "Authentication token required" });
+  }
+  try {
+    const decoded = jwt.verify(token.split(" ")[1], process.env.JWT_SECRET_KEY);
+    if (!decoded) {
+      return res.status(401).json({ message: "Invalid token" });
+    }
+    const results = await CASES.aggregate([
+      {
+        $match: {
+          clientId: decoded.id,
+        },
+      },
+      {
+        $unwind: "$meetings",
+      },
+      {
+        $project: {
+          _id: 1,
+          caseId: 1,
+          clientName: 1,
+          clientId: 1,
+          clientEmail: 1,
+          clientAddress: 1,
+          clientMobile: 1,
+          respondentName: 1,
+          respondentAddress: 1,
+          respondentEmail: 1,
+          respondentMobile: 1,
+          amount: 1,
+          accountNumber: 1,
+          cardNo: 1,
+          disputeType: 1,
+          isArbitratorAssigned: 1,
+          isFileUpload: 1,
+          fileName: 1,
+          attachments: 1,
+          recordings: 1,
+          orderSheet: 1,
+          awards: 1,
+          arbitratorId: 1,
+          arbitratorName: 1,
+          arbitratorEmail: 1,
+          isFirstHearingDone: 1,
+          isSecondHearingDone: 1,
+          isMeetCompleted: 1,
+          isAwardCompleted: 1,
+          isCaseResolved: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          meetingId: "$meetings.id",
+          webLink: "$meetings.webLink",
+          startTime: "$meetings.start",
+        },
+      },
+      {
+        $sort: { startTime: -1 },
+      },
+      {
+        $limit: 5,
+      },
+    ]);
+
+    return res.status(200).json({ data: results });
+  } catch (error) {
+    console.error("Error fetching full meeting data with case details:", error);
+    return res
+      .status(500)
+      .json({ message: "Error fetching full meeting data with case details" });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+// All Meetings for Admin in the Calender section
 const allMeetigs = async (req, res) => {
   try {
     const cases = await CASES.aggregate([
@@ -336,6 +435,8 @@ const allMeetigs = async (req, res) => {
   }
 };
 
+
+// All Meetings for Arbitrator in the Calender section
 const allMeetigsArbitrator = async (req, res) => {
   const { token } = req.headers;
   if (!token) {
@@ -384,6 +485,111 @@ const allMeetigsArbitrator = async (req, res) => {
   }
 };
 
+
+// All Meetings for Clients in the Calender section
+const allMeetingsClient = async (req, res) => {
+  const { token } = req.headers;
+  if (!token) {
+    return res.status(401).json({ message: "Authentication token required" });
+  }
+  try {
+    const decoded = jwt.verify(token.split(" ")[1], process.env.JWT_SECRET_KEY);
+    if (!decoded) {
+      return res.status(401).json({ message: "Invalid token" });
+    }
+    const cases=await CASES.aggregate([
+      {
+        $match: {
+          clientId: decoded.id,
+        },
+      },
+      {
+        $project: {
+          caseId: 1,
+          arbitratorName: 1,
+          clientName: 1,
+          respondentName: 1,
+          disputeType: 1,
+          meetings: {
+            $map: {
+              input: "$meetings",
+              as: "meeting",
+              in: {
+                webLink: "$$meeting.webLink",
+                start: "$$meeting.start",
+                end: "$$meeting.end",
+              },
+            },
+          },
+        },
+      },
+      { $unwind: "$meetings" },
+      { $sort: { "meetings.start": -1 } },
+    ])
+    return res.status(200).json({ data: cases });
+  } catch (error) {
+    console.error("Error fetching all meetings:", error);
+    return res.status(500).json({
+      message: "Error fetching all meetings",
+    });
+  }
+};
+
+
+// All Meetings for Respondent in the Calender section
+const allMeetingsRespondent = async (req, res) => {
+  const { token } = req.headers;
+  if (!token) {
+    return res.status(401).json({ message: "Authentication token required" });
+  }
+  try {
+    const decoded = jwt.verify(token.split(" ")[1], process.env.JWT_SECRET_KEY);
+    if (!decoded) {
+      return res.status(401).json({ message: "Invalid token" });
+    }
+
+    const cases=await CASES.aggregate([
+      {
+        $match: {
+          accountNumber: decoded.accountNumber,
+        },
+      },
+      {
+        $project: {
+          caseId: 1,
+          arbitratorName: 1,
+          clientName: 1,
+          respondentName: 1,
+          disputeType: 1,
+          meetings: {
+            $map: {
+              input: "$meetings",
+              as: "meeting",
+              in: {
+                webLink: "$$meeting.webLink",
+                start: "$$meeting.start",
+                end: "$$meeting.end",
+              },
+            },
+          },
+        },
+      },
+      { $unwind: "$meetings" },
+      { $sort: { "meetings.start": -1 } },
+    ])
+    return res.status(200).json({ data: cases });
+  } catch (error) {
+    console.error("Error fetching all meetings:", error);
+    return res.status(500).json({
+      message: "Error fetching all meetings",
+    });
+  }
+};
+
+
+
+
+
 module.exports = {
   recentMeeting,
   fullMeetingDataWithCaseDetails,
@@ -391,4 +597,8 @@ module.exports = {
   recentMeetingArbitrator,
   fullMeetingDataWithCaseDetailsArbitrator,
   allMeetigsArbitrator,
+ 
+  allMeetingsClient,
+  allMeetingsRespondent,
+  fullMeetingDataWithCaseDetailsClient,
 };

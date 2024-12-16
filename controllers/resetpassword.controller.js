@@ -4,6 +4,7 @@ const { PASSWORDRESET } = require("../model/resetPassword.model");
 const { USER } = require("../module/users/user.model");
 const { default: axios } = require("axios");
 
+// Reset password if user forget his password
 const userExists = async (req, res) => {
   const { emailId } = req.body;
   try {

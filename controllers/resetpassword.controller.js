@@ -15,7 +15,7 @@ const userExists = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-
+    // otp to mail
     const otp = (Math.floor(Math.random() * 9000) + 1000).toString();
     const html = `
       <h4>Hi ${user.name},</h4>
@@ -57,7 +57,7 @@ const userExists = async (req, res) => {
     }
 
     const otpSMS = (Math.floor(Math.random() * 9000) + 1000).toString();
-    const text = `Your OTP for forgot password at Sandhee Platform is ${otpSMS}. Please do not share it with anyone. Team SANDHEE (RecQARZ)`;
+    const text = `Your OTP for Sandhee Platform is ${otpSMS}. It is valid for 5 minutes. Please do not share it with anyone. Team SANDHEE (RecQARZ)`;
 
     try {
       sendSmsToRecipient(contactNo, text);
@@ -77,7 +77,7 @@ const userExists = async (req, res) => {
   }
 };
 
-// after putting otp
+// After putting otp
 const verifyOtp = async (req, res) => {
   const { emailId, otp, otpSMS } = req.body;
   try {

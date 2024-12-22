@@ -62,6 +62,14 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    otpSMS: {
+      type: String,
+      default: "",
+    },
+    otpMail: {
+      type: String,
+      default: "",
+    },
   },
   { timestamps: true }
 );

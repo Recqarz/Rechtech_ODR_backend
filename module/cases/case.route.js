@@ -16,7 +16,7 @@ const path = require("path");
 const fs = require("fs");
 const { updateMeetStatus } = require("../webex/webex.controller");
 const { bulkAddCasesRoute } = require("./bulkupload.controller");
-const { chartData, chartDataArbitrator, chartDataClient } = require("./chartdata.controller");
+const { chartData, chartDataArbitrator, chartDataClient, chartDataRespondent } = require("./chartdata.controller");
 const { calendarRoute } = require("./case.calendar.route");
 
 const asyncHandler = (fn) => (req, res, next) => {
@@ -83,8 +83,11 @@ caseRoute.get("/chartdata", chartData);
 //routes for Case completed(in chart) for arbitrator in the dashboard
 caseRoute.get("/chartdata/arbitrator", chartDataArbitrator);
 
-//routes for Case completed(in chart) for arbitrator in the dashboard
+//routes for Case completed(in chart) for client in the dashboard
 caseRoute.get("/chartdata/client", chartDataClient);
+
+//routes for Case completed(in chart) for respondent in the dashboard
+caseRoute.get("/chartdata/respondent", chartDataRespondent);
 
 
 caseRoute.post("/uploadawards", uploads.single("file"), asyncHandler(addAward));

@@ -61,4 +61,60 @@ const appointArbitratorandNotifyBulk = async (req, res) => {
   }
 };
 
-module.exports = { appointArbitratorandNotify, appointArbitratorandNotifyBulk };
+const appointArbitratorandForPendingCasesNotifyBulk = async (req, res) => {
+  const { data } = req.body;
+
+  if (!data || data.length === 0) {
+    return res.status(400).json({ message: "Invalid or empty data array" });
+  }
+
+  try {
+    const dataLength = data.length;
+    let arbitrators = await USER.find({ role: "arbitrator" });
+    const arbitratorCount = arbitrators.length;
+    if (arbitratorCount === 0) {
+      return res.status(400).json({ message: "No arbitrators available" });
+    }
+    const arbitratorAssignments = Array.from(
+      { length: arbitratorCount },
+      () => []
+    );
+
+    for (let i = 0; i < dataLength; i++) {
+      const arbitratorIndex = i % arbitratorCount;
+      arbitratorAssignments[arbitratorIndex].push(data[i]);
+    }
+    for (let i = 0; i < arbitratorCount; i++) {
+      const arbitrator = arbitrators[i];
+
+      for (const caseId of arbitratorAssignments[i]) {
+        const caseData = await CASES.findById(caseId);
+
+        if (!caseData.isArbitratorAssigned) {
+          caseData.arbitratorId = arbitrator._id;
+          caseData.arbitratorName = arbitrator.name;
+          caseData.arbitratorEmail = arbitrator.emailId;
+          caseData.isArbitratorAssigned = true;
+          const updatedCases = await caseData.save();
+          notificationToarbitratorforcaseassign(updatedCases);
+          notificationToclientforcaseassign(updatedCases);
+          notificationTorespondentforcaseassign(updatedCases);
+
+        }
+      }
+    }
+    return res.status(200).json({
+      message:
+        "Arbitrators appointed successfully and cases distributed equally!",
+    });
+  } catch (err) {
+    console.error("Error occurred:", err);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+module.exports = {
+  appointArbitratorandNotify,
+  appointArbitratorandNotifyBulk,
+  appointArbitratorandForPendingCasesNotifyBulk,
+};

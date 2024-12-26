@@ -1,5 +1,5 @@
 const { CASES } = require("./case.model");
-const jwt = require("jsonwebtoken")
+const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 // Case completed for admin in the dashboard
@@ -13,6 +13,7 @@ const chartData = async (req, res) => {
       {
         $match: {
           createdAt: { $gte: fourWeeksAgo },
+          isAwardCompleted: true
         },
       },
       {
@@ -89,8 +90,11 @@ const chartDataArbitrator = async (req, res) => {
     if (!token) {
       return res.status(401).json({ message: "Token not provided" });
     }
-    const decodedToken = jwt.verify(token.split(" ")[1], process.env.JWT_SECRET_KEY);
-    if(!decodedToken){
+    const decodedToken = jwt.verify(
+      token.split(" ")[1],
+      process.env.JWT_SECRET_KEY
+    );
+    if (!decodedToken) {
       return res.status(403).json({ message: "Invalid token" });
     }
     const currentDate = new Date();
@@ -102,6 +106,7 @@ const chartDataArbitrator = async (req, res) => {
         $match: {
           createdAt: { $gte: fourWeeksAgo },
           arbitratorId: decodedToken.id,
+          isAwardCompleted: true,
         },
       },
       {
@@ -171,7 +176,6 @@ const chartDataArbitrator = async (req, res) => {
   }
 };
 
-
 // Case completed(in chart) for client in the dashboard
 const chartDataClient = async (req, res) => {
   const { token } = req.headers;
@@ -179,8 +183,11 @@ const chartDataClient = async (req, res) => {
     if (!token) {
       return res.status(401).json({ message: "Token not provided" });
     }
-    const decodedToken = jwt.verify(token.split(" ")[1], process.env.JWT_SECRET_KEY);
-    if(!decodedToken){
+    const decodedToken = jwt.verify(
+      token.split(" ")[1],
+      process.env.JWT_SECRET_KEY
+    );
+    if (!decodedToken) {
       return res.status(403).json({ message: "Invalid token" });
     }
     const currentDate = new Date();
@@ -192,6 +199,7 @@ const chartDataClient = async (req, res) => {
         $match: {
           createdAt: { $gte: fourWeeksAgo },
           clientId: decodedToken.id,
+          isAwardCompleted: true,
         },
       },
       {
@@ -261,8 +269,6 @@ const chartDataClient = async (req, res) => {
   }
 };
 
-
-
 // Case completed(in chart) for respondent in the dashboard
 const chartDataRespondent = async (req, res) => {
   const { token } = req.headers;
@@ -270,8 +276,11 @@ const chartDataRespondent = async (req, res) => {
     if (!token) {
       return res.status(401).json({ message: "Token not provided" });
     }
-    const decodedToken = jwt.verify(token.split(" ")[1], process.env.JWT_SECRET_KEY);
-    if(!decodedToken){
+    const decodedToken = jwt.verify(
+      token.split(" ")[1],
+      process.env.JWT_SECRET_KEY
+    );
+    if (!decodedToken) {
       return res.status(403).json({ message: "Invalid token" });
     }
     const currentDate = new Date();
@@ -283,6 +292,7 @@ const chartDataRespondent = async (req, res) => {
         $match: {
           createdAt: { $gte: fourWeeksAgo },
           accountNumber: decodedToken.accountNumber,
+          isAwardCompleted: true,
         },
       },
       {
@@ -352,6 +362,9 @@ const chartDataRespondent = async (req, res) => {
   }
 };
 
-
-
-module.exports = { chartData, chartDataArbitrator, chartDataClient, chartDataRespondent };
+module.exports = {
+  chartData,
+  chartDataArbitrator,
+  chartDataClient,
+  chartDataRespondent,
+};

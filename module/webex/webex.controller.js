@@ -93,7 +93,7 @@ const initializeToken = async (req, res) => {
     res.status(500).send({ error: "Failed to initialize global token" });
   }
 };
-
+// Schedule Meeting
 const createMeeting = async (req, res) => {
   const { caseId, startTime, endTime, title } = req.body;
   try {
@@ -191,6 +191,7 @@ const scheduleJobForRecordingBulk = (meetingId, caseId, meetingEndTime) => {
   scheduleNextRetry(firstRetryTime);
 };
 
+// Schedule Meeting for bulk
 const createMeetingforBulk = async (req, res) => {
   const { caseId, startTime, endTime, title } = req.body;
   try {

@@ -92,6 +92,8 @@ const getAutoCaseId = async (req, res) => {
   }
 };
 
+
+/*
 const getAllCases = async (req, res) => {
   try {
     const data = await CASES.find().sort({ _id: -1 });
@@ -101,7 +103,28 @@ const getAllCases = async (req, res) => {
     return res.status(500).send("Internal Server Error: " + err.message);
   }
 };
+*/
+// Get all cases (admin section)
+const getAllCases = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1; // Default to page 1 if not provided
+    const limit = parseInt(req.query.limit) || 5; // Default to 10 items per page
+    const skip = (page - 1) * limit;
+    const totalCases = await CASES.countDocuments();
+    const data = await CASES.find().sort({ _id: -1 }).skip(skip).limit(limit);
+    return res.status(200).json({
+      cases: data,
+      currentPage: page,
+      totalPages: Math.ceil(totalCases / limit),
+      totalCases,
+    });
+  } catch (err) {
+    console.error("Error getting all cases:", err.message);
+    return res.status(500).send("Internal Server Error: " + err.message);
+  }
+};
 
+// Arbitrator Cases
 const arbitratorCases = async (req, res) => {
   const { token } = req.headers;
 
@@ -117,16 +140,32 @@ const arbitratorCases = async (req, res) => {
       return res.status(401).json({ message: "Invalid token" });
     }
     const id = decoded.id;
-    const caseData = await CASES.find({ arbitratorId: id }).sort({ _id: -1 });
+
+    const page = parseInt(req.query.page) || 1; // Default to page 1 if not provided
+    const limit = parseInt(req.query.limit) || 10; // Default to 10 items per page
+    const skip = (page - 1) * limit;
+
+    const caseData = await CASES.find({ arbitratorId: id })
+      .sort({ _id: -1 })
+      .skip(skip)
+      .limit(limit);
+
     if (!caseData) {
       return res.status(404).json({ message: "Case data not found" });
     }
-    res.status(200).json({ caseData });
+    const totalCases = await CASES.countDocuments({ arbitratorId: id });
+    res.status(200).json({
+      caseData,
+      currentPage: page,
+      totalPages: Math.ceil(totalCases / limit),
+      totalCases,
+    });
   } catch (err) {
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
+// Client Cases
 const clientCases = async (req, res) => {
   const { token } = req.headers;
 
@@ -146,11 +185,27 @@ const clientCases = async (req, res) => {
     if (!user) {
       return res.status(402).json({ message: "Invalid user id" });
     }
-    const caseData = await CASES.find({ clientId: user._id }).sort({ _id: -1 });
+
+    const page = parseInt(req.query.page) || 1; // Default to page 1 if not provided
+    const limit = parseInt(req.query.limit) || 10; // Default to 10 items per page
+    const skip = (page - 1) * limit;
+
+    const caseData = await CASES.find({ clientId: user._id })
+      .sort({ _id: -1 })
+      .skip(skip)
+      .limit(limit);
     if (!caseData) {
       return res.status(404).json({ message: "Case data not found" });
     }
-    res.status(200).json({ caseData });
+
+    const totalCases = await CASES.countDocuments({ clientId: user._id });
+
+    res.status(200).json({
+      caseData,
+      currentPage: page,
+      totalPages: Math.ceil(totalCases / limit),
+      totalCases,
+    });
   } catch (err) {
     return res.status(500).json({ message: "Internal Server Error" });
   }

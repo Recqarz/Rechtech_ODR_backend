@@ -1,10 +1,25 @@
 const { CASES } = require("../module/cases/case.model");
 const { USER } = require("../module/users/user.model");
 
+// All Arbitrator
 const allArbitrators = async (req, res) => {
   try {
-    let arbitrator = await USER.find({ role: "arbitrator" }).sort({ _id: -1 });
-    return res.status(200).json({ user: arbitrator });
+    const page = parseInt(req.query.page) || 1; // Default to page 1 if not provided
+    const limit = parseInt(req.query.limit) || 10; // Default to 10 items per page
+    const skip = (page - 1) * limit;
+
+    let arbitrator = await USER.find({ role: "arbitrator" })
+      .sort({ _id: -1 })
+      .skip(skip)
+      .limit(limit);
+    const totalCases = await USER.countDocuments({ role: "arbitrator" });
+
+    return res.status(200).json({
+      user: arbitrator,
+      currentPage: page,
+      totalPages: Math.ceil(totalCases / limit),
+      totalCases,
+    });
   } catch (err) {
     return res.status(500).json({ message: "Internal Server Error" });
   }

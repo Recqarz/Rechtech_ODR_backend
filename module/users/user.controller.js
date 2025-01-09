@@ -69,7 +69,9 @@ const handleAuthSignup = async (req, res) => {
         });
       } catch (error) {
         console.error("Error sending email:", error);
-        return res.status(500).json({ message: "Failed to send OTP via email." });
+        return res
+          .status(500)
+          .json({ message: "Failed to send OTP via email." });
       }
 
       const newUser = await USER.create({
@@ -115,7 +117,7 @@ const handleAuthSignup = async (req, res) => {
         areaOfExperties,
         experienceInYears,
         about,
-        uid
+        uid,
       });
       if (!newUser) {
         return res.status(500).json({ message: "Internal error" });
@@ -127,7 +129,6 @@ const handleAuthSignup = async (req, res) => {
     }
   }
 };
-
 
 /*
 const handleAuthSignup = async (req, res) => {
@@ -265,13 +266,100 @@ const handleAuthLogin = async (req, res) => {
     if (!user.status) {
       return res.status(401).json({ message: "User is inactive" });
     }
-    const key = process.env.JWT_SECRET_KEY;
-    const authToken = jwt.sign({ id: user._id }, key, { expiresIn: "1d" });
-    return res.json({ token: `bearer ${authToken}`, role: user.role });
+
+    // OTP via SMS
+    const otpSMS = (Math.floor(Math.random() * 9000) + 1000).toString();
+    const text = `Your OTP for Sandhee Platform is ${otpSMS}. It is valid for 5 minutes. Please do not share it with anyone. Team SANDHEE (RecQARZ)`;
+    await sendSmsToRecipient(user.contactNo, text);
+
+    // OTP via Email
+    const otpMail = (Math.floor(Math.random() * 9000) + 1000).toString();
+    const html = `
+  <h4>Hi ${user.name},</h4>
+  <p>Your OTP for login at Sandhee Platform is: <b>${otpMail}</b></p>
+  <p>Please enter this code to proceed with login.</p>
+  <h4>Best regards,</h4>
+  <p>Team Sandhee</p>
+`;
+
+    const emailData = {
+      sender: {
+        name: process.env.BREVO_SENDER_NAME,
+        email: process.env.BREVO_SENDER_EMAIL,
+      },
+      to: [{ email: emailId, name: "User" }],
+      subject: "Your OTP For Login",
+      htmlContent: html,
+    };
+
+    try {
+      await axios.post("https://api.brevo.com/v3/smtp/email", emailData, {
+        headers: {
+          accept: "application/json",
+          "api-key": process.env.BREVO_SENDER_API_KEY,
+          "content-type": "application/json",
+        },
+      });
+    } catch (error) {
+      console.error("Error sending email:", error);
+      return res.status(500).json({ message: "Failed to send OTP via email." });
+    }
+
+    await USER.updateOne(
+      { _id: user._id },
+      { otpSMS: otpSMS, otpMail: otpMail }
+    );
+
+    // const key = process.env.JWT_SECRET_KEY;
+    // const authToken = jwt.sign({ id: user._id }, key, { expiresIn: "1d" });
+    // return res.json({
+    //   token: `bearer ${authToken}`,
+    //   role: user.role,
+    // });
+
+    return res.json({
+      message: "OTP sent successfully to number and email!", email: emailId, role: user.role,
+    });
   } catch (err) {
     return res.status(500).json({ message: "Internel error" });
   }
 };
+
+//Login to put OTP
+const handleAuthLoginOTP = async (req, res) => {
+  const { emailId, otpSMS, otpMail } = req.body;
+  try {
+    let user = await USER.findOne({ emailId });
+    if (!user) {
+      return res.status(404).json({ message: "Email not found!" });
+    }
+    const verifyOTP = await USER.findOne({
+      emailId: emailId,
+      otpSMS: otpSMS,
+      otpMail: otpMail,
+    });
+    if (!verifyOTP) {
+      return res.status(404).json({ message: "Otp not found" });
+    }
+    if (Date.now() - verifyOTP.date > 1000 * 60 * 10) {
+      return res.status(401).json({ message: "Otp expired" });
+    }
+    const { role } = verifyOTP;
+    const { _id } = verifyOTP;
+
+    const key = process.env.JWT_SECRET_KEY;
+    const authToken = jwt.sign({ id: verifyOTP._id }, key, {
+      expiresIn: "1d",
+    });
+    return res
+      .status(200)
+      .json({ token: `bearer ${authToken}`, role: role, id: _id });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ message: "Internel error" });
+  }
+};
+
 
 //respondent for login(put account no)
 const respondentOTP = async (req, res) => {
@@ -358,4 +446,5 @@ module.exports = {
   respondentLogin,
   validateToken,
   handleAuthSignUpOTP,
+  handleAuthLoginOTP,
 };
